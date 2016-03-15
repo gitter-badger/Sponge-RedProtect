@@ -28,6 +28,10 @@ import br.net.fabiozumbi12.redprotect.listeners.RPEntityListener;
 //import br.net.fabiozumbi12.RedProtect.listeners.RPMine18;
 //import br.net.fabiozumbi12.RedProtect.listeners.RPPlayerListener;
 //import br.net.fabiozumbi12.RedProtect.listeners.RPWorldListener;
+import br.net.fabiozumbi12.redprotect.listeners.RPGlobalListener;
+import br.net.fabiozumbi12.redprotect.listeners.RPMine18;
+import br.net.fabiozumbi12.redprotect.listeners.RPPlayerListener;
+import br.net.fabiozumbi12.redprotect.listeners.RPWorldListener;
 
 @Plugin(id = "br.net.fabiozumbi12.redprotect", name = "RedProtect", version = "6.4")
 public class RedProtect {
@@ -76,12 +80,12 @@ public class RedProtect {
             
             cmdService.register(plugin, new RPCommands(), Arrays.asList("redprotect","rp","regionp","regp"));
             
-            //game.getEventManager().registerListeners(plugin, new RPGlobalListener());
+            game.getEventManager().registerListeners(plugin, new RPGlobalListener());
             game.getEventManager().registerListeners(plugin, new RPBlockListener());
-            //game.getEventManager().registerListeners(plugin, new RPPlayerListener());
+            game.getEventManager().registerListeners(plugin, new RPPlayerListener());
             game.getEventManager().registerListeners(plugin, new RPEntityListener());
-            //game.getEventManager().registerListeners(plugin, new RPWorldListener());            
-            //game.getEventManager().registerListeners(plugin, new RPMine18());
+            game.getEventManager().registerListeners(plugin, new RPWorldListener());            
+            game.getEventManager().registerListeners(plugin, new RPMine18());
             
             
             if (!cfgs.getString("file-type").equalsIgnoreCase("mysql")){
