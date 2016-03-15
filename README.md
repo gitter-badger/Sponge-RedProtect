@@ -6,3 +6,5 @@ Full features and description on BukkitDev: http://dev.bukkit.org/bukkit-plugins
 And now on Spigot too: https://www.spigotmc.org/resources/redprotect.15841/
 
 See the WIKI for Help with commands and permissions: https://github.com/FabioZumbi12/RedProtect/wiki
+
+SnapShots can be found here: https://app.wercker.com/#applications/56e79c0e531868293a0eae38
