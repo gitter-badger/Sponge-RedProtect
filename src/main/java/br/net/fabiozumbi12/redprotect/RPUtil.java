@@ -29,8 +29,10 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.text.Text;
@@ -49,11 +51,7 @@ public class RPUtil {
     public static Text toText(String str){
     	return TextSerializers.FORMATTING_CODE.deserialize(str);//str.replaceAll("&([0-9a-fA-F])", "§($1)");
     }
-    
-    public static ItemType getItemType(String type){
-    	return RedProtect.game.getRegistry().getType(ItemType.class, type).get();
-    }
-    
+        
     public static boolean isBukkitBlock(BlockState b){
     	//check if is bukkit 1.8.8 blocks
     	try{
@@ -696,5 +694,17 @@ public class RPUtil {
     		}    		
     	}
     	return false;
+	}
+	
+	public static GameMode getGameMode(String gm){
+		return Sponge.getGame().getRegistry().getType(GameMode.class, gm).get();
+	}
+	
+	public static ItemType getItemType(String it){
+		return Sponge.getGame().getRegistry().getType(ItemType.class, it).get();
+	}
+	
+	public static PotionEffectType getPotType(String pot){
+		return Sponge.getGame().getRegistry().getType(PotionEffectType.class, pot).get();
 	}
 }

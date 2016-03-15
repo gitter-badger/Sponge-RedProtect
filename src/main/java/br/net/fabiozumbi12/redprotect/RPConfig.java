@@ -210,26 +210,9 @@ public class RPConfig{
 							getNodes("allowed-claim-worlds").setValue(worlds);
 						}
 					} catch (ObjectMappingException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}    
-    	            
-    	            //add worlds to color list
-    	            for (World w:RedProtect.serv.getWorlds()){
-	            		if (getNodes("region-settings.world-colors."+w.getName()).getString() == null) {
-	            			if (w.getDimension().getType().equals(DimensionTypes.OVERWORLD)){
-	            				getNodes("region-settings.world-colors."+w.getName()).setValue("&a&l");			            		
-	            			} else
-	            			if (w.getDimension().getType().equals(DimensionTypes.NETHER)){
-	            				getNodes("region-settings.world-colors."+w.getName()).setValue("&c&l");			            		
-	            			} else
-	            			if (w.getDimension().getType().equals(DimensionTypes.THE_END)){
-	            				getNodes("region-settings.world-colors."+w.getName()).setValue("&5&l");			            		
-	            			}
-	            			RedProtect.logger.warning("Added world to color list " + w.getName());
-	            		}	            		
-	            	}
-    	            
+    	                	            
                     /*------------- ---- Add default config for not updateable configs ------------------*/
                     
                     //update new player flags according version
@@ -254,7 +237,6 @@ public class RPConfig{
 	        				getNodes("flags-configuration.enabled-flags").setValue(flags);   
 	        				RedProtect.logger.warning("Configuration UPDATE! We added new flags to &lflags-configuration > enabled-flags&r!");
 						} catch (ObjectMappingException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}        				
         			}
@@ -262,7 +244,7 @@ public class RPConfig{
         			/*---------------------------------------- Global Flags for worlds loaded --------------------------------------------*/
         			
         			for (World w:Sponge.getServer().getWorlds()){
-        				this.LoadWorldFlags(w);
+        				this.loadPerWorlds(w);
         			}
                     
                     /*------------------------------------------ Gui Items ------------------------------------------*/
@@ -325,7 +307,21 @@ public class RPConfig{
     	            
 	}
     
-	public void LoadWorldFlags(World w) {
+	public void loadPerWorlds(World w) {
+		
+		if (getNodes("region-settings.world-colors."+w.getName()).getString("").equals("")) {
+			if (w.getDimension().getType().equals(DimensionTypes.OVERWORLD)){
+				getNodes("region-settings.world-colors."+w.getName()).setValue("&a&l");			            		
+			} else
+			if (w.getDimension().getType().equals(DimensionTypes.NETHER)){
+				getNodes("region-settings.world-colors."+w.getName()).setValue("&c&l");			            		
+			} else
+			if (w.getDimension().getType().equals(DimensionTypes.THE_END)){
+				getNodes("region-settings.world-colors."+w.getName()).setValue("&5&l");			            		
+			}
+			RedProtect.logger.warning("Added world to color list " + w.getName());
+		}
+		
 		try {
 			RedProtect.logger.debug("Writing global flags for world "+ w.getName() + "...");
         	gflags.getNode(w.getName(),"build").setValue(gflags.getNode(w.getName(),"build").getBoolean(true));
@@ -349,7 +345,6 @@ public class RPConfig{
             //write gflags to gflags file
             gFlagsManager.save(gflags);
 		} catch (IOException | ObjectMappingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
