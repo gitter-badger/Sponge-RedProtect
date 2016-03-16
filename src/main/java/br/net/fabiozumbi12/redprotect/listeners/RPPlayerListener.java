@@ -18,18 +18,12 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.hanging.Hanging;
-import org.spongepowered.api.entity.hanging.ItemFrame;
+import org.spongepowered.api.entity.living.ArmorStand;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
-import org.spongepowered.api.entity.projectile.Arrow;
-import org.spongepowered.api.entity.projectile.Egg;
-import org.spongepowered.api.entity.projectile.FishHook;
 import org.spongepowered.api.entity.projectile.Projectile;
-import org.spongepowered.api.entity.projectile.Snowball;
 import org.spongepowered.api.entity.projectile.ThrownPotion;
-import org.spongepowered.api.entity.projectile.explosive.fireball.Fireball;
-import org.spongepowered.api.entity.projectile.explosive.fireball.SmallFireball;
 import org.spongepowered.api.entity.projectile.source.ProjectileSource;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
@@ -74,7 +68,7 @@ public class RPPlayerListener{
 	private HashMap<String, String> PlayertaskID = new HashMap<String, String>();
     
     public RPPlayerListener() {
-    	RedProtect.logger.debug("Loaded RPPlayerListener...");
+    	RedProtect.logger.debug("player","Loaded RPPlayerListener...");
     }
     
     @Listener
@@ -114,7 +108,7 @@ public class RPPlayerListener{
         
         if (!b.getState().getType().equals(BlockTypes.AIR)){
         	l = b.getLocation().get();
-        	RedProtect.logger.debug("RPPlayerListener - Is PlayerInteractEvent event. The block is " + b.getState().getType().getName());
+        	RedProtect.logger.debug("player","RPPlayerListener - Is InteractBlockEvent.Primary event. The block is " + b.getState().getType().getName());
         } else {
         	l = p.getLocation();
         }
@@ -141,7 +135,7 @@ public class RPPlayerListener{
         
         if (!b.getState().getType().equals(BlockTypes.AIR)){
         	l = b.getLocation().get();
-        	RedProtect.logger.debug("RPPlayerListener - Is PlayerInteractEvent event. The block is " + b.getState().getType().getName());
+        	RedProtect.logger.debug("player","RPPlayerListener - Is InteractBlockEvent.Secondary event. The block is " + b.getState().getType().getName());
         } else {
         	l = p.getLocation();
         }
@@ -182,7 +176,7 @@ public class RPPlayerListener{
     //listen all
     @Listener
     public void onInteractBlock(InteractBlockEvent event, @First Player p) {
-    	RedProtect.logger.debug("RPPlayerListener - InteractEntityEvent canceled? " + event.isCancelled());
+    	RedProtect.logger.debug("player","RPPlayerListener - InteractBlockEvent canceled? " + event.isCancelled());
     	
         BlockSnapshot b = event.getTargetBlock();
         BlockState bstate = b.getState();
@@ -190,24 +184,26 @@ public class RPPlayerListener{
         
         if (!b.getState().getType().equals(BlockTypes.AIR)){
         	l = b.getLocation().get();
-        	RedProtect.logger.debug("RPPlayerListener - Is PlayerInteractEvent event. The block is " + bstate.getType().getName());
+        	RedProtect.logger.debug("player","RPPlayerListener - Is InteractBlockEvent event. The block is " + bstate.getType().getName());
         } else {
         	l = p.getLocation();
         }
         
         Region r = RedProtect.rm.getTopRegion(l);
         ItemType itemInHand = ItemTypes.NONE;
+        ItemStack stack = ItemStack.builder().itemType(ItemTypes.NONE).build();
         if (p.getItemInHand().isPresent()){
-        	itemInHand = p.getItemInHand().get().getItem();
+        	stack = p.getItemInHand().get();
+        	itemInHand = stack.getItem();
         }
         
         //check if is a gui item
-        if (RPUtil.RemoveGuiItem(p.getItemInHand().get())){        	
+        if (RPUtil.RemoveGuiItem(stack)){        	
         	p.setItemInHand(ItemStack.of(ItemTypes.NONE, 1));
         	event.setCancelled(true);
         }        
         
-        if (p.getItemInHand().get().getItem().getId().equalsIgnoreCase(RedProtect.cfgs.getString("wands.infoWandID"))) {
+        if (stack.getItem().getId().equalsIgnoreCase(RedProtect.cfgs.getString("wands.infoWandID"))) {
         	r = RedProtect.rm.getTopRegion(l);
             if (p.hasPermission("redprotect.infowand")) {
                 if (r == null) {
@@ -249,8 +245,8 @@ public class RPPlayerListener{
         	//if (r != null) && (b != null) >>
         	if (b != null) {
         		if (bstate.getType().equals(BlockTypes.DRAGON_EGG) ||
-        				bstate.getType().getName().equalsIgnoreCase("bed") ||
-        				bstate.getType().getName().contains("note_block")){        	
+        				bstate.getType().equals(BlockTypes.BED) ||
+        				bstate.getType().equals(BlockTypes.NOTEBLOCK)){        	
                 	
                 	if (!r.canBuild(p)){
                 		RPLang.sendMessage(p, "playerlistener.region.cantinteract");
@@ -394,7 +390,7 @@ public class RPPlayerListener{
     @Listener
     public void onPlayerInteract(InteractEntityEvent e, @First Player p) {
         Entity ent = e.getTargetEntity();
-        RedProtect.logger.debug("Is PlayerInteractEntityEvent event: " + ent.getType().getName());
+        RedProtect.logger.debug("player","RPPlayerListener - Is InteractEntityEvent event: " + ent.getType().getName());
         
         Location<World> l = ent.getLocation();
         Region r = RedProtect.rm.getTopRegion(l);
@@ -402,7 +398,7 @@ public class RPPlayerListener{
         	return;
         }
         
-        if (ent instanceof ItemFrame) {        	
+        if (ent instanceof Hanging || ent instanceof ArmorStand) {        	
             if (!r.canBuild(p)) {
                 RPLang.sendMessage(p, "playerlistener.region.cantedit");
                 e.setCancelled(true);
@@ -410,14 +406,14 @@ public class RPPlayerListener{
             }
         } 
         
-        else if ((ent.getType().getName().contains("minecart") || ent.getType().getName().contains("BOAT")) && !r.canMinecart(p)) {
+        else if ((ent.getType().getName().contains("minecart") || ent.getType().getName().contains("boat")) && !r.canMinecart(p)) {
         	RPLang.sendMessage(p, "blocklistener.region.cantenter");
             e.setCancelled(true);
             return;
         } 
                 
         else if (!r.allowMod(p) && !RPUtil.isBukkitEntity(ent) && (!(ent instanceof Player))){
-        	RedProtect.logger.debug("PlayerInteractEntityEvent - Block is " + ent.getType().getName());
+        	RedProtect.logger.debug("player","PlayerInteractEntityEvent - Block is " + ent.getType().getName());
         	RPLang.sendMessage(p, "playerlistener.region.cantinteract");
         	e.setCancelled(true);        	       
         }        
@@ -458,61 +454,29 @@ public class RPPlayerListener{
     }
     
     @Listener
-    public void onEntityDamageByEntityEvent(DamageEntityEvent e, @First Entity e2) {
+    public void onEntityDamageByEntityEvent(DamageEntityEvent e, @First Entity e1) {
     	Player p = null;       
     	
-        Entity e1 = e.getTargetEntity();
+        Entity e2 = e.getTargetEntity();
         
-    	RedProtect.logger.debug("RPLayerListener: Is EntityDamageByEntityEvent event"); 
+    	RedProtect.logger.debug("player","RPLayerListener: Is EntityDamageByEntityEvent event"); 
     	
         if (e2 instanceof Player){
         	p = (Player)e2;
-        } else if (e2 instanceof Arrow){
-        	Arrow proj = (Arrow)e2;
+        } else if (e2 instanceof Projectile){
+        	Projectile proj = (Projectile)e2;
         	if (proj.getShooter() instanceof Player){
         		p = (Player) proj.getShooter();
         	}        	
-        } else if (e2 instanceof FishHook){
-        	FishHook fish = (FishHook)e2;
-        	if (fish.getShooter() instanceof Player){
-        		p = (Player) fish.getShooter();
-        	} 
-        } else if (e2 instanceof Egg){
-        	Egg Egg = (Egg)e2;
-        	if (Egg.getShooter() instanceof Player){
-        		p = (Player) Egg.getShooter();
-        	} 
-        } else if (e2 instanceof Snowball){
-        	Snowball Snowball = (Snowball)e2;
-        	if (Snowball.getShooter() instanceof Player){
-        		p = (Player) Snowball.getShooter();
-        	} 
-        } else if (e2 instanceof Fireball){
-        	Fireball Fireball = (Fireball)e2;
-        	if (Fireball.getShooter() instanceof Player){
-        		p = (Player) Fireball.getShooter();
-        	} 
-        } else if (e2 instanceof Projectile){
-        	Projectile Projectile = (Projectile)e2;
-        	if (Projectile.getShooter() instanceof Player){
-        		p = (Player) Projectile.getShooter();
-        	} 
-        } else if (e2 instanceof SmallFireball){
-        	SmallFireball SmallFireball = (SmallFireball)e2;
-        	if (SmallFireball.getShooter() instanceof Player){
-        		p = (Player) SmallFireball.getShooter();
-        	}
-        } else {
-            e.isCancelled();
-        }
+        } 
         
         if (p != null){
-        	RedProtect.logger.debug("Player: " + p.getName()); 
+        	RedProtect.logger.debug("player","Player: " + p.getName()); 
         } else {
-        	RedProtect.logger.debug("Player: is null"); 
+        	RedProtect.logger.debug("player","Player: is null"); 
         }
         
-        RedProtect.logger.debug("Damager: " + e2.getType().getName()); 
+        RedProtect.logger.debug("player","Damager: " + e2.getType().getName()); 
         
         Location<World> l = e1.getLocation();
         Region r = RedProtect.rm.getTopRegion(l);
@@ -535,7 +499,7 @@ public class RPPlayerListener{
         	e.setCancelled(true);
         }   
 
-        if (e1.getType().getName().contains("minecart") && !r.canMinecart(p)){
+        if ((e1.getType().getName().contains("minecart") || e1.getType().getName().contains("boat")) && !r.canMinecart(p)){
         	RPLang.sendMessage(p, "blocklistener.region.cantbreak");
         	e.setCancelled(true);
         }	
@@ -859,33 +823,35 @@ public class RPPlayerListener{
     
     @Listener
     public void PlayerLogin(ClientConnectionEvent.Login e){
-    	Player p = e.getTargetUser().getPlayer().get();
-    	//Adjust inside region
-    	//p.setLocation(new Location<World>(p.getWorld(), p.getLocation().getBlockX(), p.getLocation().getBlockY()+0.1, p.getLocation().getBlockZ()));
-    	
-    	if (p.hasPermission("redprotect.update") && RedProtect.Update && !RedProtect.cfgs.getBool("update-check.auto-update")){
-    		RPLang.sendMessage(p, "&bAn update is available for RedProtect: " + RedProtect.UptVersion);
-    		RPLang.sendMessage(p, "&bUse /rp update to download and automatically install this update.");
-    	}
-    	
-    	if (RedProtect.cfgs.getString("region-settings.record-player-visit-method").equalsIgnoreCase("ON-LOGIN")){    		
-        	String uuid = p.getUniqueId().toString();
-        	if (!RedProtect.OnlineMode){
-        		uuid = p.getName().toLowerCase();
+    	if (e.getTargetUser().getPlayer().isPresent()){
+    		Player p = e.getTargetUser().getPlayer().get();
+        	//Adjust inside region
+        	//p.setLocation(new Location<World>(p.getWorld(), p.getLocation().getBlockX(), p.getLocation().getBlockY()+0.1, p.getLocation().getBlockZ()));
+        	
+        	if (p.hasPermission("redprotect.update") && RedProtect.Update && !RedProtect.cfgs.getBool("update-check.auto-update")){
+        		RPLang.sendMessage(p, "&bAn update is available for RedProtect: " + RedProtect.UptVersion);
+        		RPLang.sendMessage(p, "&bUse /rp update to download and automatically install this update.");
         	}
-        	for (Region r:RedProtect.rm.getMemberRegions(uuid)){
-        		if (r.getDate() == null || !r.getDate().equals(RPUtil.DateNow())){
-        			r.setDate(RPUtil.DateNow());
-        		}
+        	
+        	if (RedProtect.cfgs.getString("region-settings.record-player-visit-method").equalsIgnoreCase("ON-LOGIN")){    		
+            	String uuid = p.getUniqueId().toString();
+            	if (!RedProtect.OnlineMode){
+            		uuid = p.getName().toLowerCase();
+            	}
+            	for (Region r:RedProtect.rm.getMemberRegions(uuid)){
+            		if (r.getDate() == null || !r.getDate().equals(RPUtil.DateNow())){
+            			r.setDate(RPUtil.DateNow());
+            		}
+            	}
         	}
-    	}    	
+    	}    	    	
     }
     
     @Listener
     public void PlayerTrownPotion(LaunchProjectileEvent e, @First Player p){ 
     	
     	Entity ent = e.getTargetEntity();    	
-    	RedProtect.logger.debug("Is PotionSplashEvent event.");
+    	RedProtect.logger.debug("player","Is PotionSplashEvent event.");
         
     	Region r = RedProtect.rm.getTopRegion(ent.getLocation());    	        
         if (ent instanceof ThrownPotion){        	
@@ -951,7 +917,7 @@ public class RPPlayerListener{
     	}
     	for (String remove:toremove){
     		PlayertaskID.remove(remove);
-    		RedProtect.logger.debug("Removed task ID: " + remove + " for player " + p.getName());
+    		RedProtect.logger.debug("player","Removed task ID: " + remove + " for player " + p.getName());
     	}
     	toremove.clear();
     }
@@ -1052,7 +1018,7 @@ public class RPPlayerListener{
 							if (PlayertaskID.containsKey(ideff) && PlayertaskID.get(ideff).equals(p.getName())){
 								Sponge.getScheduler().getTaskById(UUID.fromString(id)).get().cancel();
 								removeTasks.add(taskId);
-								RedProtect.logger.debug("(RegionFlags-eff)Removed task ID: " + taskId + " for player " + p.getName());
+								RedProtect.logger.debug("player","(RegionFlags-eff)Removed task ID: " + taskId + " for player " + p.getName());
 							}
 						}
 						for (String key:removeTasks){
@@ -1077,7 +1043,7 @@ public class RPPlayerListener{
 						if (PlayertaskID.containsKey(ideff) && PlayertaskID.get(ideff).equals(p.getName())){
 							Sponge.getScheduler().getTaskById(UUID.fromString(id)).get().cancel();
 							removeTasks.add(taskId);
-							RedProtect.logger.debug("(RegionFlags fly)Removed task ID: " + taskId + " for player " + p.getName());
+							RedProtect.logger.debug("player","(RegionFlags fly)Removed task ID: " + taskId + " for player " + p.getName());
 						}
 					}
 					for (String key:removeTasks){
@@ -1132,13 +1098,13 @@ public class RPPlayerListener{
 							try {
 								this.finalize();
 							} catch (Throwable e) {
-								RedProtect.logger.debug("Effects not finalized...");
+								RedProtect.logger.debug("player","Effects not finalized...");
 							}							
 						}  						
   						} 
   					},0, 20, TimeUnit.SECONDS).getTask().getUniqueId().toString();	
   				PlayertaskID.put(TaskId+"_"+eff+r.getName(), p.getName());
-  				RedProtect.logger.debug("Added task ID: " + TaskId+"_"+eff + " for player " + p.getName());
+  				RedProtect.logger.debug("player","Added task ID: " + TaskId+"_"+eff + " for player " + p.getName());
   			}
   		}
         
@@ -1154,13 +1120,13 @@ public class RPPlayerListener{
 							try {
 								this.finalize();
 							} catch (Throwable e) {
-								RedProtect.logger.debug("Can-fly not finalized...");
+								RedProtect.logger.debug("player","Can-fly not finalized...");
 							}							
 						}
 						} 
 					},0, 80, TimeUnit.SECONDS).getTask().getUniqueId().toString();		
 				PlayertaskID.put(TaskId+"_"+"can-fly"+r.getName(), p.getName());
-				RedProtect.logger.debug("(RegionFlags fly)Added task ID: " + TaskId+"_"+"can-fly"+ " for player " + p.getName());
+				RedProtect.logger.debug("player","(RegionFlags fly)Added task ID: " + TaskId+"_"+"can-fly"+ " for player " + p.getName());
     	}
     }
         
@@ -1188,7 +1154,7 @@ public class RPPlayerListener{
 							if (PlayertaskID.containsKey(ideff) && PlayertaskID.get(ideff).equals(p.getName())){
 								Sponge.getScheduler().getTaskById(UUID.fromString(id)).get().cancel();
 								removeTasks.add(taskId);
-								RedProtect.logger.debug("(noRegionFlags eff)Removed task ID: " + taskId + " for effect " + effect);
+								RedProtect.logger.debug("player","(noRegionFlags eff)Removed task ID: " + taskId + " for effect " + effect);
 							}
 						}
 						for (String key:removeTasks){
@@ -1210,7 +1176,7 @@ public class RPPlayerListener{
     					if (PlayertaskID.containsKey(ideff) && PlayertaskID.get(ideff).equals(p.getName())){
     						Sponge.getScheduler().getTaskById(UUID.fromString(id)).get().cancel();
     						removeTasks.add(taskId);
-    						RedProtect.logger.debug("(noRegionFlags fly)Removed task ID: " + taskId + " for player " + p.getName());
+    						RedProtect.logger.debug("player","(noRegionFlags fly)Removed task ID: " + taskId + " for player " + p.getName());
     					}
     				}
     				for (String key:removeTasks){

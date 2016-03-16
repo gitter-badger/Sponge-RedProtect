@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,7 +76,7 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
     @Override
     public void save() {
         try {
-            RedProtect.logger.debug("RegionManager.Save(): File type is " + RedProtect.cfgs.getString("file-type"));
+            RedProtect.logger.debug("default","RegionManager.Save(): File type is " + RedProtect.cfgs.getString("file-type"));
             String world = this.getWorld().getName();
                   
             if (RedProtect.cfgs.getString("file-type").equals("yml")) {            	
@@ -199,7 +199,7 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
         String world = this.getWorld().getName();        
 
         if (RedProtect.cfgs.getString("file-type").equals("yml")) {        	
-        	RedProtect.logger.debug("Load world " + this.world.getName() + ". File type: yml");
+        	RedProtect.logger.debug("default","Load world " + this.world.getName() + ". File type: yml");
         	
         	try {
         		File tempRegionFile = new File(path);    
@@ -222,8 +222,12 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
             		int minZ = region.getNode(rname,"minZ").getInt();
         	    	int maxY = region.getNode(rname,"maxY").getInt(255);
         	    	int minY = region.getNode(rname,"minY").getInt(0);
-        	    	List<String> owners = region.getNode(rname,"owners").getList(TypeToken.of(String.class));
-        	    	List<String> members = region.getNode(rname,"members").getList(TypeToken.of(String.class));
+        	    	LinkedList<String> owners = new LinkedList<String>();
+        	    	owners.addAll(region.getNode(rname,"owners").getList(TypeToken.of(String.class)));
+        	    	
+        	    	LinkedList<String> members = new LinkedList<String>();
+        	    	members.addAll(region.getNode(rname,"members").getList(TypeToken.of(String.class)));
+        	    	
         	    	String creator = region.getNode(rname,"creator").getString();	    	  
         	    	String welcome = region.getNode(rname,"welcome").getString();
         	    	int prior = region.getNode(rname,"priority").getInt();
@@ -248,7 +252,7 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
       	    		    }    	    		
       	    	    } 
         	    	for (String flag:RedProtect.cfgs.AdminFlags){
-        	    		if (region.getNode(rname,"flags",flag) != null){
+        	    		if (region.getNode(rname,"flags",flag).getString() != null){
         	    			newr.flags.put(flag,region.getNode(rname,"flags",flag).getValue());
         	    		}
         	    	}
@@ -269,8 +273,8 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
         Set<Region> ret = new HashSet<Region>();
         
 		for (Region r:regions.values()){
-			RedProtect.logger.debug("Radius: " + radius);
-			RedProtect.logger.debug("X radius: " + Math.abs(r.getCenterX() - px) + " - Z radius: " + Math.abs(r.getCenterZ() - pz));
+			RedProtect.logger.debug("default","Radius: " + radius);
+			RedProtect.logger.debug("default","X radius: " + Math.abs(r.getCenterX() - px) + " - Z radius: " + Math.abs(r.getCenterZ() - pz));
 			if (Math.abs(r.getCenterX() - px) <= radius && Math.abs(r.getCenterZ() - pz) <= radius){
 				ret.add(r);
 			}

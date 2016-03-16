@@ -6,12 +6,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -92,7 +90,7 @@ class WorldMySQLRegionManager implements WorldRegionManager{
             return true;
         }     
         try {   
-        	RedProtect.logger.debug("Checking if database exists... " + this.url + this.dbname);
+        	RedProtect.logger.debug("default","Checking if database exists... " + this.url + this.dbname);
         	Connection con = DriverManager.getConnection(this.url, RedProtect.cfgs.getString("mysql.user-name"), RedProtect.cfgs.getString("mysql.user-pass"));
             DatabaseMetaData meta = con.getMetaData();
             ResultSet rs = meta.getCatalogs();
@@ -225,7 +223,7 @@ class WorldMySQLRegionManager implements WorldRegionManager{
                 ResultSet rs = st.executeQuery("SELECT * FROM region WHERE name='"+rname+"' AND world='"+this.world.getName()+"'");            
                 if (rs.next()){ 
                 	LinkedList<String> owners = new LinkedList<String>();
-                    List<String> members = new ArrayList<String>();
+                	LinkedList<String> members = new LinkedList<String>();
                     HashMap<String, Object> flags = new HashMap<String, Object>();  
                     
                     String creator = rs.getString("creator");
@@ -272,13 +270,13 @@ class WorldMySQLRegionManager implements WorldRegionManager{
                 }
                 st.close(); 
                 rs.close();
-                RedProtect.logger.debug("Adding region to cache: "+rname);
+                RedProtect.logger.debug("default","Adding region to cache: "+rname);
                 Sponge.getScheduler().createSyncExecutor(RedProtect.plugin).schedule(new Runnable(){
                 		@Override
                 		public void run(){
                 		if (regions.containsKey(rname)){
                 			regions.remove(rname);
-                			RedProtect.logger.debug("Removed cached region: "+rname);
+                			RedProtect.logger.debug("default","Removed cached region: "+rname);
                 		}
                 		}                	
                 }, RedProtect.cfgs.getInt("mysql.region-cache-minutes"), TimeUnit.MINUTES);                

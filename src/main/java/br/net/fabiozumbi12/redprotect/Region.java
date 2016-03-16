@@ -3,6 +3,7 @@ package br.net.fabiozumbi12.redprotect;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,8 +35,8 @@ public class Region implements Serializable{
     private int maxY;
     private int prior;
     private String name;
-    private List<String> owners;
-    private List<String> members;
+    private LinkedList<String> owners;
+    private LinkedList<String> members;
     private String wMessage;
     private String creator;
     private String world;
@@ -148,12 +149,12 @@ public class Region implements Serializable{
         this.z = z;
     }
     
-    public void setOwners(List<String> owners) {
+    public void setOwners(LinkedList<String> owners) {
         this.owners = owners;
         RedProtect.rm.updateLiveRegion(this, "owners", owners.toString().replace("[", "").replace("]", ""));
     }
     
-    public void setMembers(List<String> members) {
+    public void setMembers(LinkedList<String> members) {
         this.members = members;
         RedProtect.rm.updateLiveRegion(this, "members", members.toString().replace("[", "").replace("]", ""));
     }
@@ -189,7 +190,7 @@ public class Region implements Serializable{
 	 * @return {@code List<String>}
 	 */  
     @Deprecated()
-    public List<String> getOwners() {
+    public LinkedList<String> getOwners() {
         return this.owners;
     }
     
@@ -200,7 +201,7 @@ public class Region implements Serializable{
 	 * @return {@code List<String>}
 	 */  
     @Deprecated
-    public List<String> getMembers() {
+    public LinkedList<String> getMembers() {
         return this.members;
     }
     
@@ -282,25 +283,35 @@ public class Region implements Serializable{
         } else {
         	today = this.date;
         }
-        for (String pname:this.owners){
-        	Player play = RedProtect.serv.getPlayer(pname).get();
-            if (RedProtect.OnlineMode && pname != null && !pname.equalsIgnoreCase(RedProtect.cfgs.getString("region-settings.default-owner"))){
-            	play = RedProtect.serv.getPlayer(UUID.fromString(RPUtil.PlayerToUUID(pname))).get();
-        	}            
-        	if (pname != null && play != null && play.isOnline()){
+        for (String pname:this.owners){        	
+        	if (RedProtect.OnlineMode){
+        		Player play = null;
+        		if (pname != null && !pname.equalsIgnoreCase(RedProtect.cfgs.getString("region-settings.default-owner"))){
+                	play = RedProtect.serv.getPlayer(UUID.fromString(RPUtil.PlayerToUUID(pname))).get();
+            	}            
+            	if (pname != null && play != null && play.isOnline()){
+            		today = "&aOnline!";
+            		break;
+            	} 
+        	} else if (RedProtect.serv.getPlayer(pname).isPresent()){
         		today = "&aOnline!";
-        		break;
-        	}        	
+        		break; 
+        	}                   	
         } 
         for (String pname:this.members){        	
-        	Player play = RedProtect.serv.getPlayer(pname).get();
-            if (RedProtect.OnlineMode && pname != null && !pname.equalsIgnoreCase(RedProtect.cfgs.getString("region-settings.default-owner"))){
-            	play = RedProtect.serv.getPlayer(UUID.fromString(RPUtil.PlayerToUUID(pname))).get();
-        	}             
-        	if (pname != null && play != null && play.isOnline()){
+        	if (RedProtect.OnlineMode){
+        		Player play = null;
+        		if (pname != null && !pname.equalsIgnoreCase(RedProtect.cfgs.getString("region-settings.default-owner"))){
+                	play = RedProtect.serv.getPlayer(UUID.fromString(RPUtil.PlayerToUUID(pname))).get();
+            	}            
+            	if (pname != null && play != null && play.isOnline()){
+            		today = "&aOnline!";
+            		break;
+            	} 
+        	} else if (RedProtect.serv.getPlayer(pname).isPresent()){
         		today = "&aOnline!";
-        		break;
-        	}
+        		break; 
+        	}  
         } 
         
         return RPUtil.toText(RPLang.get("region.name")+ " "+ colorChar+this.name+ RPLang.get("general.color")+ " | "+ RPLang.get("region.creator")+ " "+ RPUtil.UUIDtoPlayer(this.creator)+ "\n"+      
@@ -328,7 +339,7 @@ public class Region implements Serializable{
      * @param date Date of latest visit of an owner or member.
      * @param value Last value of this region.
      */
-    public Region(String name, List<String> owners, List<String> members, String creator, Location<World> minLoc, Location<World> maxLoc, HashMap<String,Object> flags, String wMessage, int prior, String worldName, String date, long value, Location<World> tppoint) {
+    public Region(String name, LinkedList<String> owners, LinkedList<String> members, String creator, Location<World> minLoc, Location<World> maxLoc, HashMap<String,Object> flags, String wMessage, int prior, String worldName, String date, long value, Location<World> tppoint) {
     	super();        
         this.maxMbrX = maxLoc.getBlockX();
         this.minMbrX = minLoc.getBlockX();
@@ -382,7 +393,7 @@ public class Region implements Serializable{
      * @param date Date of latest visit of an owner or member.
      * @param value Last value of this region.
      */
-    public Region(String name, List<String> owners, List<String> members, String creator, int maxMbrX, int minMbrX, int maxMbrZ, int minMbrZ, int minY, int maxY, HashMap<String,Object> flags, String wMessage, int prior, String worldName, String date, long value, Location<World> tppoint) {
+    public Region(String name, LinkedList<String> owners, LinkedList<String> members, String creator, int maxMbrX, int minMbrX, int maxMbrZ, int minMbrZ, int minY, int maxY, HashMap<String,Object> flags, String wMessage, int prior, String worldName, String date, long value, Location<World> tppoint) {
     	super();
         this.x = new int[] {minMbrX,minMbrX,maxMbrX,maxMbrX};
         this.z = new int[] {minMbrZ,minMbrZ,maxMbrZ,maxMbrZ};
@@ -435,7 +446,7 @@ public class Region implements Serializable{
      * @param welcome Set a welcome message.
      * @param value A value in server economy.
      */
-    public Region(String name, List<String> owners, List<String> members, String creator, int[] x, int[] z, int miny, int maxy, int prior, String worldName, String date, Map<String, Object> flags, String welcome, long value, Location<World> tppoint) {
+    public Region(String name, LinkedList<String> owners, LinkedList<String> members, String creator, int[] x, int[] z, int miny, int maxy, int prior, String worldName, String date, Map<String, Object> flags, String welcome, long value, Location<World> tppoint) {
     	super();
         this.prior = prior;
         this.world = worldName;
@@ -628,7 +639,8 @@ public class Region implements Serializable{
     
     public Text getFlagInfo() {
     	String flaginfo = "";
-    	for (String flag:this.flags.keySet()){    		
+    	for (String flag:this.flags.keySet()){  
+    		RedProtect.logger.severe("Flag: "+flag);
     		if (RedProtect.cfgs.getDefFlags().contains(flag)){
     			String flagValue = this.flags.get(flag).toString();
     			if (flagValue.equalsIgnoreCase("true") || flagValue.equalsIgnoreCase("false")){

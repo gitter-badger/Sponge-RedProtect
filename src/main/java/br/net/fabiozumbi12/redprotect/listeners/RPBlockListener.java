@@ -1,11 +1,9 @@
 package br.net.fabiozumbi12.redprotect.listeners;
 
 import java.util.List;
-import java.util.Map;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.Sign;
 import org.spongepowered.api.block.tileentity.TileEntityTypes;
@@ -13,7 +11,6 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.hanging.Hanging;
-import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.monster.Monster;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.projectile.explosive.fireball.Fireball;
@@ -22,20 +19,15 @@ import org.spongepowered.api.entity.weather.Lightning;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.action.LightningEvent;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
-import org.spongepowered.api.event.block.CollideBlockEvent;
-import org.spongepowered.api.event.block.NotifyNeighborBlockEvent;
 import org.spongepowered.api.event.block.tileentity.ChangeSignEvent;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.IgniteEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
-import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.util.Direction;
-import org.spongepowered.api.util.blockray.BlockRay;
-import org.spongepowered.api.util.blockray.BlockRayHit;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
@@ -53,17 +45,17 @@ public class RPBlockListener{
 	private static RPContainer cont = new RPContainer();
 	
 	public RPBlockListener(){
-		RedProtect.logger.debug("Loaded RPBlockListener...");
+		RedProtect.logger.debug("blocks","Loaded RPBlockListener...");
 	}    
     
 	@Listener
     public void onSignPlace(ChangeSignEvent e, @First Player p) {   
-    	RedProtect.logger.debug("BlockListener - Is SignChangeEvent event! Cancelled? " + e.isCancelled());
+    	RedProtect.logger.debug("blocks","BlockListener - Is SignChangeEvent event! Cancelled? " + e.isCancelled());
     	
     	Sign s = e.getTargetTile();
     	List<Text> lines = e.getText().asList();
         Location<World> loc = s.getLocation();
-        World w = loc.getExtent();
+        World w = p.getWorld();
         BlockSnapshot b = w.createSnapshot(loc.getBlockPosition());
             	        
         if (b == null) {
@@ -124,12 +116,12 @@ public class RPBlockListener{
                     return;
             	} else {
             		RPLang.sendMessage(p, "blocklistener.container.notprotected");
-            		w.digBlock(loc.getBlockPosition(), null);
+            		w.digBlock(loc.getBlockPosition(), Cause.of(NamedCause.simulated(p)));
             		return;
             	}
         	} else {
         		RPLang.sendMessage(p, "blocklistener.container.notregion");
-        		w.digBlock(loc.getBlockPosition(), null);
+        		w.digBlock(loc.getBlockPosition(), Cause.of(NamedCause.simulated(p)));
         		return;
         	}        	
         }
@@ -158,12 +150,15 @@ public class RPBlockListener{
     
     @Listener
     public void onBlockPlace(ChangeBlockEvent.Place e, @First Player p) {
-    	RedProtect.logger.debug("BlockListener - Is BlockPlaceEvent event! Cancelled? " + e.isCancelled());
+    	RedProtect.logger.debug("blocks","BlockListener - Is BlockPlaceEvent event! Cancelled? " + e.isCancelled());
     	
     	World w = e.getTargetWorld();
         BlockSnapshot b = e.getTransactions().get(0).getOriginal();
         Location<World> bloc = b.getLocation().get();
-        ItemType m = p.getItemInHand().get().getItem();
+        ItemType m = ItemTypes.NONE;
+        if (p.getItemInHand().isPresent()){
+        	m = p.getItemInHand().get().getItem();
+        }
         Boolean antih = RedProtect.cfgs.getBool("region-settings.anti-hopper");
         Region r = RedProtect.rm.getTopRegion(b.getLocation().get());
         
@@ -203,7 +198,7 @@ public class RPBlockListener{
     
     @Listener
     public void onBlockBreak(ChangeBlockEvent.Break e, @First Player p) {
-    	RedProtect.logger.debug("BlockListener - Is ChangeBlockEvent.Break event! Cancelled? " + e.isCancelled());
+    	RedProtect.logger.debug("blocks","BlockListener - Is ChangeBlockEvent.Break event!");
     	World w = e.getTargetWorld();
         BlockSnapshot b = e.getTransactions().get(0).getOriginal();
         Location<World> bloc = b.getLocation().get();
@@ -232,25 +227,22 @@ public class RPBlockListener{
     			return;
     		}
         }
-              
+        /*     
         BlockRayHit<World> look = BlockRay.from(p).blockLimit(10).build().end().get();   
         BlockSnapshot looksnap = w.createSnapshot(look.getBlockPosition());
 		if (r != null && looksnap.getState().getType().equals(BlockTypes.FIRE) && !r.canBuild(p)){
 			RPLang.sendMessage(p, "blocklistener.region.cantbreak");
 			e.setCancelled(true);
 			return;
-		}
-        
-        
+		}*/
+                
         if (r != null && !r.canBuild(p) && !r.canTree(b) && !r.canMining(b) && !r.canBreak(b)){
         	RPLang.sendMessage(p, "blocklistener.region.cantbuild");
             e.setCancelled(true);
         	return;
         }       
-                
-                
     }
-        
+        /*
     @Listener
     public void onEntityExplode(ExplosionEvent.Detonate e) {
     	RedProtect.logger.debug("Is BlockListener - ExplosionEvent.Detonate event");
@@ -286,14 +278,14 @@ public class RPBlockListener{
         }
         /*if (!toRemove.isEmpty()){
         	e.getTransactions().removeAll(toRemove);
-        }*/
+        }
         
-    }
+    }*/
     
     @Listener
     public void onFrameAndBoatBrake(DamageEntityEvent e) {
     	
-    	RedProtect.logger.debug("Is BlockListener - DamageEntityEvent event");
+    	RedProtect.logger.debug("blocks","Is BlockListener - DamageEntityEvent event");
     	Entity ent = e.getTargetEntity();
     	Location<World> l = e.getTargetEntity().getLocation();
     	    
@@ -343,7 +335,7 @@ public class RPBlockListener{
     		return;
     	}
     	
-    	RedProtect.logger.debug("Is BlockIgniteEvent event. Canceled? " + e.isCancelled());
+    	RedProtect.logger.debug("blocks","Is BlockIgniteEvent event. Canceled? " + e.isCancelled());
     	
     	Region r = RedProtect.rm.getTopRegion(b.getLocation());
 		if (r != null && !r.canFire()){
@@ -371,6 +363,7 @@ public class RPBlockListener{
     	return;
     }
     
+    /*
     @Listener
     public void onBlockBurn(NotifyNeighborBlockEvent e, @First BlockSnapshot source){
     	
@@ -394,33 +387,52 @@ public class RPBlockListener{
     	}
     	return;
     }
-    
+    */
 	@Listener
-    public void onFlow(CollideBlockEvent e, @First BlockSnapshot source){
-		
-    	BlockState b = e.getTargetBlock();
-    	BlockState bfrom = source.getState();
-		RedProtect.logger.debug("Is BlockFromToEvent event is to " + b.getType().getName() + " from " + bfrom.getType().getName());
-    	Region r = RedProtect.rm.getTopRegion(e.getTargetLocation());
-    	if (r != null && !r.canFlow() && (
-    			bfrom.getType().equals(BlockTypes.WATER) ||
-    			bfrom.getType().equals(BlockTypes.LAVA) ||
-    			bfrom.getType().equals(BlockTypes.FLOWING_LAVA) ||
-    			bfrom.getType().equals(BlockTypes.FLOWING_WATER)
-    			)){
-          	 e.setCancelled(true);   
-          	 return;
-    	}
+    public void onFlow(ChangeBlockEvent.Place e, @First BlockSnapshot source){		
+		for (Transaction<BlockSnapshot> bt:e.getTransactions()){
+			BlockSnapshot bfrom = bt.getOriginal();
+			RedProtect.logger.debug("blocks","Is BlockFromToEvent.Place event is to " + source.getState().getType().getName() + " from " + bfrom.getState().getType().getName());
+			Region r = RedProtect.rm.getTopRegion(bfrom.getLocation().get());
+	    	if (r != null && !r.canFlow() && (
+	    			source.getState().getType().equals(BlockTypes.WATER) ||
+	    			source.getState().getType().equals(BlockTypes.LAVA) ||
+	    			source.getState().getType().equals(BlockTypes.FLOWING_LAVA) ||
+	    			source.getState().getType().equals(BlockTypes.FLOWING_WATER) ||
+	    			source.getState().getType().equals(BlockTypes.LEAVES) ||
+	    			source.getState().getType().equals(BlockTypes.LEAVES2)
+	    			)){
+	          	 e.setCancelled(true);  
+	          	 return;
+	    	}
+	    	
+	    	if (r != null && !r.FlowDamage() && !source.getState().getType().equals(bfrom.getState().getType()) && !bfrom.getState().getType().equals(BlockTypes.AIR)){
+	    		e.setCancelled(true);       
+	         	return;
+	   	    }
+		}
     	
-    	if (r != null && !r.FlowDamage() && !b.getType().equals(BlockTypes.AIR)){
-         	 e.setCancelled(true);      
-         	return;
-   	    }
+    }
+	
+	@Listener
+    public void onDecay(ChangeBlockEvent.Decay e, @First BlockSnapshot source){		
+		for (Transaction<BlockSnapshot> bt:e.getTransactions()){
+			BlockSnapshot bfrom = bt.getOriginal();
+			RedProtect.logger.debug("blocks","Is BlockFromToEvent.Decay event is to " + source.getState().getType().getName() + " from " + bfrom.getState().getType().getName());
+			Region r = RedProtect.rm.getTopRegion(bfrom.getLocation().get());
+	    	if (r != null && !r.canFlow() && (
+	    			source.getState().getType().equals(BlockTypes.LEAVES) ||
+	    			source.getState().getType().equals(BlockTypes.LEAVES2)
+	    			)){
+	          	 e.setCancelled(true);  
+	          	 return;
+	    	}	    	
+		}    	
     }
 	    
 	@Listener
 	public void onLightning(LightningEvent.Pre e, @First Lightning light){
-		RedProtect.logger.debug("Is LightningStrikeEvent event");
+		RedProtect.logger.debug("blocks","Is LightningStrikeEvent event");
 		Location<World> l = light.getLocation();
 		Region r = RedProtect.rm.getTopRegion(l);
 		if (r != null && !r.canFire()){
@@ -495,7 +507,7 @@ public class RPBlockListener{
 		}
 	}
 	*/
-	
+	/*
 	@Listener
 	public void onLeafDecay(ChangeBlockEvent.Decay e){		
 		for (Transaction<BlockSnapshot> t:e.getTransactions()){
@@ -505,5 +517,5 @@ public class RPBlockListener{
 	         	 t.setValid(false);           	  
 			}
 		}	
-	}
+	}*/
 }

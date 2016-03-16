@@ -1,11 +1,15 @@
 package br.net.fabiozumbi12.redprotect;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import org.spongepowered.api.Sponge;
@@ -33,7 +37,7 @@ import org.spongepowered.api.world.World;
 public class RPCommands implements CommandCallable {
     
 	public RPCommands(){
-		RedProtect.logger.debug("Loaded RPCommands...");
+		RedProtect.logger.debug("default","Loaded RPCommands...");
 	}
 	
     private static void sendNotInRegionMessage(Player p) {
@@ -216,7 +220,10 @@ public class RPCommands implements CommandCallable {
         		        		
         		//rp clamilimit player
         		if  (args[0].equalsIgnoreCase("claimlimit") || args[0].equalsIgnoreCase("climit")  || args[0].equalsIgnoreCase("cl")){ 
-        			Player offp = RedProtect.serv.getPlayer(args[1]).get();
+        			Player offp = null;
+        			if (RedProtect.serv.getPlayer(args[1]).isPresent()){
+        				offp = RedProtect.serv.getPlayer(args[1]).get();
+        			}
                 	if (offp == null){
                 		sender.sendMessage(RPUtil.toText(RPLang.get("cmdmanager.noplayer.thisname").toString().replace("{player}", args[1])));
                 		return cmdr;
@@ -233,7 +240,10 @@ public class RPCommands implements CommandCallable {
         		}
         		
         		if (args[0].equalsIgnoreCase("limit") || args[0].equalsIgnoreCase("limitremaining") || args[0].equalsIgnoreCase("remaining") || args[0].equalsIgnoreCase("l")) {
-        			Player offp = RedProtect.serv.getPlayer(args[1]).get();
+        			Player offp = null;
+        			if (RedProtect.serv.getPlayer(args[1]).isPresent()){
+        				offp = RedProtect.serv.getPlayer(args[1]).get();
+        			}
                 	if (offp == null){
                 		sender.sendMessage(RPUtil.toText(RPLang.get("cmdmanager.noplayer.thisname").toString().replace("{player}", args[1])));
                 		return cmdr;
@@ -254,8 +264,14 @@ public class RPCommands implements CommandCallable {
         	if (args.length == 3){
         		//rp clamilimit player world
         		if  (args[0].equalsIgnoreCase("claimlimit") || args[0].equalsIgnoreCase("climit")  || args[0].equalsIgnoreCase("cl")){ 
-        			Player offp = RedProtect.serv.getPlayer(args[1]).get();
-        			World w = RedProtect.serv.getWorld(args[2]).get();
+        			Player offp = null;
+        			if (RedProtect.serv.getPlayer(args[1]).isPresent()){
+        				offp = RedProtect.serv.getPlayer(args[1]).get();
+        			}
+        			World w = null;
+        			if (RedProtect.serv.getWorld(args[2]).isPresent()){
+        				w = RedProtect.serv.getWorld(args[2]).get();
+        			}
                 	if (offp == null){
                 		sender.sendMessage(RPUtil.toText(RPLang.get("cmdmanager.noplayer.thisname").toString().replace("{player}", args[1])));
                 		return cmdr;
@@ -321,9 +337,15 @@ public class RPCommands implements CommandCallable {
         	if (args.length == 4) {
         		if (args[0].equalsIgnoreCase("tp")){
         			//rp tp <player> <region> <world>
-                	Player play = RedProtect.serv.getPlayer(args[1]).get();
+                	Player play = null;
+                	if (RedProtect.serv.getPlayer(args[1]).isPresent()){
+                		play = RedProtect.serv.getPlayer(args[1]).get();
+                	}
                 	if (play != null){                		
-                		World w = RedProtect.serv.getWorld(args[3]).get();                		
+                		World w = null;  
+                		if (RedProtect.serv.getWorld(args[3]).isPresent()){
+                			w = RedProtect.serv.getWorld(args[3]).get();
+                		}
                 		if (w == null) {
                             sender.sendMessage(RPUtil.toText(RPLang.get("cmdmanager.region.invalidworld")));
                             return cmdr;
@@ -385,7 +407,11 @@ public class RPCommands implements CommandCallable {
     		if (args.length == 5){
     			/*/rp flag <regionName> <flag> <value> <world>*/
     			if  (args[0].equalsIgnoreCase("flag")){
-    				World w = RedProtect.serv.getWorld(args[4]).get();
+    				World w = null;
+    				if (RedProtect.serv.getWorld(args[4]).isPresent()){
+    					w = RedProtect.serv.getWorld(args[4]).get();
+    				}
+    				
         			if (w == null){
         				sender.sendMessage(RPUtil.toText(RPLang.get("correct.usage").toString() + "&e rp flag <regionName> <flag> <value> <world>"));
         				return cmdr;
@@ -551,7 +577,7 @@ public class RPCommands implements CommandCallable {
         		String serverName = RedProtect.cfgs.getString("region-settings.default-owner");
                 String name = RPUtil.nameGen(serverName, player.getWorld().getName());
                 
-                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, serverName, new ArrayList<String>());
+                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, serverName, new LinkedList<String>());
                 if (rb2.ready()) {
                     Region r2 = rb2.build();
                     RPLang.sendMessage(player,RPLang.get("cmdmanager.region.created") + " " + r2.getName() + ".");
@@ -572,7 +598,7 @@ public class RPCommands implements CommandCallable {
                 if (!RedProtect.OnlineMode){
                 	creator = player.getName().toLowerCase();
             	}
-                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, creator, new ArrayList<String>());
+                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, creator, new LinkedList<String>());
                 if (rb2.ready()) {
                     Region r2 = rb2.build();
                     RPLang.sendMessage(player,RPLang.get("cmdmanager.region.created") + " " + r2.getName() + ".");
@@ -707,7 +733,7 @@ public class RPCommands implements CommandCallable {
         		String serverName = RedProtect.cfgs.getString("region-settings.default-owner");
                 String name = args[1];
                 
-                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, serverName, new ArrayList<String>());
+                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, serverName, new LinkedList<String>());
                 if (rb2.ready()) {
                     Region r2 = rb2.build();
                     RPLang.sendMessage(player,RPLang.get("cmdmanager.region.created") + " " + r2.getName() + ".");
@@ -728,7 +754,7 @@ public class RPCommands implements CommandCallable {
                 if (!RedProtect.OnlineMode){
                 	creator = player.getName().toLowerCase();
             	}
-                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, creator, new ArrayList<String>());
+                RegionBuilder rb2 = new DefineRegionBuilder(player, RedProtect.firstLocationSelections.get(player), RedProtect.secondLocationSelections.get(player), name, creator, new LinkedList<String>());
                 if (rb2.ready()) {
                     Region r2 = rb2.build();
                     RPLang.sendMessage(player,RPLang.get("cmdmanager.region.created") + " " + r2.getName() + ".");
@@ -825,7 +851,7 @@ public class RPCommands implements CommandCallable {
                 }
                 String name = args[1];
                 String creator = player.getUniqueId().toString();
-                List<String> addedOwners = new ArrayList<String>();
+                LinkedList<String> addedOwners = new LinkedList<String>();
                 addedOwners.add(RPUtil.PlayerToUUID(args[2]));
                 if (!RedProtect.OnlineMode){
                 	creator = player.getName().toLowerCase();
@@ -1149,8 +1175,12 @@ public class RPCommands implements CommandCallable {
             }
             
             if (args.length == 4) {
-            	// /rp tp <player> <region> <world>
-            	Player play = RedProtect.serv.getPlayer(args[1]).get();
+            	// /rp tp <player> <region> <world>            	
+            	Player play = null;
+            	if (Sponge.getServer().getPlayer(args[1]).isPresent()){
+            		play = Sponge.getServer().getPlayer(args[1]).get();
+            	}
+            	
             	if (play != null){
             		handletp(player, args[2], args[3], play);
             		return cmdr;
@@ -1189,7 +1219,11 @@ public class RPCommands implements CommandCallable {
             }
             
             if (args.length == 2) {          	
-            	Player offp = Sponge.getServer().getPlayer(args[1]).get();
+            	Player offp = null;
+            	if (Sponge.getServer().getPlayer(args[1]).isPresent()){
+            		offp = Sponge.getServer().getPlayer(args[1]).get();
+            	}
+            	
             	if (offp == null){
             		RPLang.sendMessage(player,RPLang.get("cmdmanager.noplayer.thisname").toString().replace("{player}", args[1]));
             		return cmdr;
@@ -1232,7 +1266,11 @@ public class RPCommands implements CommandCallable {
             }
             
             if (args.length == 2) {          	
-            	Player offp = Sponge.getServer().getPlayer(args[1]).get();
+            	Player offp = null;
+            	if (Sponge.getServer().getPlayer(args[1]).isPresent()){
+            		offp = Sponge.getServer().getPlayer(args[1]).get();
+            	}
+            	
             	if (offp == null){
             		RPLang.sendMessage(player,RPLang.get("cmdmanager.noplayer.thisname").toString().replace("{player}", args[1]));
             		return cmdr;
@@ -1649,7 +1687,10 @@ public class RPCommands implements CommandCallable {
             	return;
             }
 
-            Player pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            Player pVictim = null;
+            if (RedProtect.serv.getPlayer(sVictim).isPresent()){
+            	pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            }
             
             if (r.getOwners().contains(VictimUUID)) {
                 r.removeOwner(VictimUUID);
@@ -1683,7 +1724,10 @@ public class RPCommands implements CommandCallable {
                 return;
             }
             
-            Player pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            Player pVictim = null;
+            if (RedProtect.serv.getPlayer(sVictim).isPresent()){
+            	pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            }
             
             String VictimUUID = RPUtil.PlayerToUUID(sVictim);
             if (RPUtil.UUIDtoPlayer(VictimUUID) == null){
@@ -1716,7 +1760,10 @@ public class RPCommands implements CommandCallable {
                 return;
             }
             
-            Player pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            Player pVictim = null;
+            if (RedProtect.serv.getPlayer(sVictim).isPresent()){
+            	pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            }
             
             String VictimUUID = RPUtil.PlayerToUUID(sVictim);
             if (RPUtil.UUIDtoPlayer(VictimUUID) == null){
@@ -1750,7 +1797,10 @@ public class RPCommands implements CommandCallable {
                 return;
             }
             
-            Player pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            Player pVictim = null;
+            if (RedProtect.serv.getPlayer(sVictim).isPresent()){
+            	pVictim = RedProtect.serv.getPlayer(sVictim).get();
+            }
             
             String VictimUUID = RPUtil.PlayerToUUID(sVictim);
             if (RPUtil.UUIDtoPlayer(VictimUUID) == null){
@@ -2130,7 +2180,12 @@ public class RPCommands implements CommandCallable {
     }
 	
 	private static void handletp(Player p, String rname, String wname, Player play){
-		World w = RedProtect.serv.getWorld(wname).get();
+		
+		World w = null;
+		if (RedProtect.serv.getWorld(wname).isPresent()){
+			w = RedProtect.serv.getWorld(wname).get();
+		}
+		
 		if (w == null) {
             RPLang.sendMessage(p, "cmdmanager.region.invalidworld");
             return;
@@ -2252,8 +2307,47 @@ public class RPCommands implements CommandCallable {
 	@Override
 	public List<String> getSuggestions(CommandSource source, String arguments)
 			throws CommandException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<String> SotTab = new ArrayList<String>();    
+    	SortedSet<String> tab = new TreeSet<String>();
+		
+		List<String> cmds = Arrays.asList("border", "expand-vert", "setminy", "setmaxy", "value", "buy", "sell", "cancelbuy", "tutorial", "limit", "claimlimit", "list", "delete", "info", "flag", "addmember", "addowner", "removemember", "removeowner", "rename", "welcome", "priority", "near", "panel");
+		List<String> admcmds = Arrays.asList("wand", "tp", "claim", "define", "redefine", "setconfig", "reload", "copyflag", "setcreator", "save-all", "reload-all");
+		
+		String[] args = arguments.split(" ");
+		
+		if (args.length == 1){
+			for (String command:cmds){
+				if (source.hasPermission("redprotect.user") && command.startsWith(args[0]) && !tab.contains(command)){
+					tab.add(command);
+					
+				}
+			}
+			for (String command:admcmds){
+				if (source.hasPermission("redprotect.admin") && command.startsWith(args[0]) && !tab.contains(command)){
+					tab.add(command);
+				}
+			}
+			SotTab.addAll(tab);
+			return SotTab;
+		}
+		if (args.length == 2){
+    		if (args[0].equalsIgnoreCase("flag")){
+    			for (String flag:RedProtect.cfgs.getDefFlags()){
+    				if (flag.startsWith(args[1]) && source.hasPermission("redprotect.flag."+ flag) && !tab.contains(flag)){
+    					tab.add(flag);
+    				}
+    			} 
+    			for (String flag:RedProtect.cfgs.AdminFlags){
+    				if (flag.startsWith(args[1]) && source.hasPermission("redprotect.admin.flag."+ flag) && !tab.contains(flag)){
+    					tab.add(flag);
+    				}
+    			}
+    			SotTab.addAll(tab);
+    			return SotTab;
+    		}
+    	}
+		return SotTab;
 	}
 
 	@Override

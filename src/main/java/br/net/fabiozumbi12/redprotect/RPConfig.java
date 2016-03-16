@@ -16,7 +16,6 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 
 import org.spongepowered.api.Server;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.living.player.Player;
@@ -44,6 +43,7 @@ public class RPConfig{
 	private ConfigurationLoader<CommentedConfigurationNode> gFlagsManager;	
 	
 	private CommentedConfigurationNode config;
+	private CommentedConfigurationNode tempConfig;
 	private CommentedConfigurationNode gui;
 	private CommentedConfigurationNode gflags;
 	
@@ -96,6 +96,10 @@ public class RPConfig{
 		
 		        //load configs
 		        try {
+		        	//tempconfig
+		        	configManager = HoconConfigurationLoader.builder().setURL(this.getClass().getResource("config.conf")).build();
+		        	tempConfig = configManager.load();
+		        	
 		        	configManager = HoconConfigurationLoader.builder().setPath(defConfig.toPath()).build();
 		        	config = configManager.load();
 					
@@ -110,15 +114,22 @@ public class RPConfig{
 					e1.printStackTrace();
 				}
     	            
-				/*
+				
     	            //------------------------------ Add default Values ----------------------------//
-    	            RPYaml temp = new RPYaml();
-    	            try {
-    	            	temp.load(config);
-					} catch (Exception e) {
-						e.printStackTrace();
-					} 
-    	            
+		        
+		        for (Object key:tempConfig.getChildrenMap().keySet()){                        	
+	            	config.getNode(key).setValue(tempConfig.getNode(key).getValue());    	            	   	            	
+	            }                        
+		        try {
+					tempConfig = configManager.load();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+                for (Object key:config.getChildrenMap().keySet()){    
+                	config.getNode(key).setValue(tempConfig.getNode(key).getValue());
+                }
+                
+		        /*
     	            if (!temp.contains("config-version")){
     	            	RedProtect.logger.severe("Old config file detected and copied to 'configBKP.yml'. Remember to check your old config file and set the new as you want!");
     	            	File bkpfile = new File(RedProtect.pathMain + File.separator + "configBKP.yml");
@@ -243,9 +254,9 @@ public class RPConfig{
         			
         			/*---------------------------------------- Global Flags for worlds loaded --------------------------------------------*/
         			
-        			for (World w:Sponge.getServer().getWorlds()){
+        			/*for (World w:server.getWorlds()){
         				this.loadPerWorlds(w);
-        			}
+        			}*/
                     
                     /*------------------------------------------ Gui Items ------------------------------------------*/
                     
@@ -254,7 +265,7 @@ public class RPConfig{
                     gui.getNode("gui-strings","false").setValue(gui.getNode("gui-strings","false").getString("&cfalse")); 
                     gui.getNode("gui-strings","separator").setValue(gui.getNode("gui-strings","separator").getString("&7|")); 
                     
-                    gui.getNode("gui-separator","material").setValue(gui.getNode("gui-separator","material").getString("THIN_GLASS")); 
+                    gui.getNode("gui-separator","material").setValue(gui.getNode("gui-separator","material").getString("this_glass")); 
                     gui.getNode("gui-separator","data").setValue(gui.getNode("gui-separator","data").getInt(0)); 
                     
                     for (String key:getDefFlagsValues().keySet()){
@@ -323,7 +334,7 @@ public class RPConfig{
 		}
 		
 		try {
-			RedProtect.logger.debug("Writing global flags for world "+ w.getName() + "...");
+			RedProtect.logger.debug("default","Writing global flags for world "+ w.getName() + "...");
         	gflags.getNode(w.getName(),"build").setValue(gflags.getNode(w.getName(),"build").getBoolean(true));
         	gflags.getNode(w.getName(),"if-build-false","break-blocks").setValue(gflags.getNode(w.getName(),"if-build-false","break-blocks").getList(TypeToken.of(String.class)));
         	gflags.getNode(w.getName(),"if-build-false","place-blocks").setValue(gflags.getNode(w.getName(),"if-build-false","place-blocks").getList(TypeToken.of(String.class)));
@@ -372,8 +383,8 @@ public class RPConfig{
 	}
     
     public ItemStack getGuiItemStack(String key){
-    	RedProtect.logger.debug("Gui Material to get: " + key);
-    	RedProtect.logger.debug("Result: " + gui.getNode("gui-flags",key,"material").getString());
+    	RedProtect.logger.debug("default","Gui Material to get: " + key);
+    	RedProtect.logger.debug("default","Result: " + gui.getNode("gui-flags",key,"material").getString());
     	return ItemStack.of(RPUtil.getItemType(gui.getNode("gui-flags",key,"material").getString()), 1);
     }
     

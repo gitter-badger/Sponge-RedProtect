@@ -1,6 +1,7 @@
 package br.net.fabiozumbi12.redprotect.listeners;
 
 import java.util.Map;
+
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
@@ -31,11 +32,14 @@ import org.spongepowered.api.event.block.NotifyNeighborBlockEvent;
 import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
+import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.util.Direction;
+import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
@@ -46,15 +50,18 @@ import br.net.fabiozumbi12.redprotect.Region;
 public class RPGlobalListener{
 	
 	public RPGlobalListener(){
-		RedProtect.logger.debug("Loaded RPGlobalListener...");
+		RedProtect.logger.debug("default","Loaded RPGlobalListener...");
 	}
 	
 	@Listener	
 	public void onBlockPlace(ChangeBlockEvent.Place e, @First Player p) {
-		RedProtect.logger.debug("RPGlobalListener - Is ChangeBlockEvent event! Cancelled? " + e.isCancelled());
+		RedProtect.logger.debug("default","RPGlobalListener - Is ChangeBlockEvent event! Cancelled? " + e.isCancelled());
 		
 		BlockState b = e.getTransactions().get(0).getOriginal().getState();
-		ItemType item = p.getItemInHand().get().getItem();
+		ItemType item = ItemTypes.NONE;
+		if (p.getItemInHand().isPresent()){
+			item = p.getItemInHand().get().getItem();
+		}
 		Region r = RedProtect.rm.getTopRegion(e.getTransactions().get(0).getOriginal().getLocation().get());
 		if (r != null){
 			return;
@@ -63,7 +70,7 @@ public class RPGlobalListener{
 		if (item.getName().contains("minecart") || item.getName().contains("boat")){
 			if (!RedProtect.cfgs.getGlobalFlag(p.getWorld().getName(), "use-minecart") && !p.hasPermission("redprotect.bypass")){
 	            e.setCancelled(true);
-	            RedProtect.logger.debug("RPGlobalListener - Can't place minecart/boat!");
+	            RedProtect.logger.debug("default","RPGlobalListener - Can't place minecart/boat!");
 	            return;
 	        }
 		} else {
@@ -72,7 +79,7 @@ public class RPGlobalListener{
 					return;
 				}
 				e.setCancelled(true);
-				RedProtect.logger.debug("RPGlobalListener - Can't Build!");
+				RedProtect.logger.debug("default","RPGlobalListener - Can't Build!");
 				return;
 			}
 		}		
@@ -80,7 +87,7 @@ public class RPGlobalListener{
 	
 	@Listener	
 	public void onBlockBreak(ChangeBlockEvent.Break e, @First Player p) {
-		RedProtect.logger.debug("RPGlobalListener - Is BlockBreakEvent event! Cancelled? " + e.isCancelled());
+		RedProtect.logger.debug("default","RPGlobalListener - Is BlockBreakEvent event! Cancelled? " + e.isCancelled());
 		
 		BlockState b = e.getTransactions().get(0).getOriginal().getState();
 		World w = e.getTargetWorld();
@@ -97,8 +104,10 @@ public class RPGlobalListener{
 	
 	@Listener	
 	public void onPlayerInteract(InteractEvent e, @First Player p){
-		RedProtect.logger.debug("RPGlobalListener - Is InteractEvent event! Cancelled? " + e.isCancelled());
-		
+		RedProtect.logger.debug("default","RPGlobalListener - Is InteractEvent event! Cancelled? " + e.isCancelled());
+		if (!e.getInteractionPoint().isPresent()){
+			return;
+		}
 		BlockSnapshot b = p.getWorld().createSnapshot(e.getInteractionPoint().get().toInt());
 		String bname = b.getState().getName().toLowerCase();
 		Region r = RedProtect.rm.getTopRegion(b.getLocation().get());
@@ -445,6 +454,7 @@ public class RPGlobalListener{
 	}
 	
 	@Listener	
+	@IsCancelled(Tristate.FALSE)
     public void onCreatureSpawn(SpawnEntityEvent event) {
     	
         for (Entity e: event.getEntities()){
@@ -452,16 +462,22 @@ public class RPGlobalListener{
             	Location<World> l = e.getLocation();
                 Region r = RedProtect.rm.getTopRegion(l);
                 if (r == null) {
+                	RedProtect.logger.debug("spawn","RPGlobalListener - Cancelled spawn of Monster " + e.getType().getName());
                     event.setCancelled(true);
+                    return;
                 }
             }
             if ((e instanceof Animal || e instanceof Villager || e instanceof Ambient || e instanceof Golem) && !RedProtect.cfgs.getGlobalFlag(e.getWorld().getName(),"spawn-passives")) {
             	Location<World> l = e.getLocation();
                 Region r = RedProtect.rm.getTopRegion(l);
                 if (r == null) {
-                    event.setCancelled(true);
+                	RedProtect.logger.debug("spawn","RPGlobalListener - Cancelled spawn of Animal " + e.getType().getName());
+                    event.setCancelled(true);                    
+                    return;
                 }
             }
-        }        
+            RedProtect.logger.debug("spawn","RPGlobalListener - Spawn mob " + e.getType().getName());
+        } 
+        
     }
 }

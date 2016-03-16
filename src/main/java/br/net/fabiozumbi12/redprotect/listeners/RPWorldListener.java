@@ -16,7 +16,7 @@ import br.net.fabiozumbi12.redprotect.Region;
 public class RPWorldListener {
     
     public RPWorldListener() {
-        RedProtect.logger.debug("Loaded RPEntityListener...");
+        RedProtect.logger.debug("world","Loaded RPEntityListener...");
     }
     
     @Listener

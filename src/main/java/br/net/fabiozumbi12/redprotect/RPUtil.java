@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +32,7 @@ import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.item.ItemType;
@@ -40,36 +42,23 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import br.net.fabiozumbi12.redprotect.Bukkit.RPBukkitBlocks;
-import br.net.fabiozumbi12.redprotect.Bukkit.RPBukkitEntities;
-
 @SuppressWarnings("deprecation")
 public class RPUtil {
     static int backup = 0; 
     public static HashMap<Player, HashMap<Location<World>, BlockState>> pBorders = new HashMap<Player, HashMap<Location<World>, BlockState>>();
         
     public static Text toText(String str){
-    	return TextSerializers.FORMATTING_CODE.deserialize(str);//str.replaceAll("&([0-9a-fA-F])", "§($1)");
+    	return TextSerializers.FORMATTING_CODE.deserialize(str);
     }
         
     public static boolean isBukkitBlock(BlockState b){
-    	//check if is bukkit 1.8.8 blocks
-    	try{
-    		RPBukkitBlocks.valueOf(b.getType().getName());     
-    		return true;
-    	} catch (Exception e){
-    		return false;
-    	}
+    	RedProtect.logger.severe("BlockType: "+b.getType().getName());
+    	return b.getType().getName().startsWith("minecraft:");
     }
     
     public static boolean isBukkitEntity(Entity e){
-    	//check if is bukkit 1.8.8 Entity
-    	try{
-    		RPBukkitEntities.valueOf(e.getType().getName());
-    		return true;
-    	} catch (Exception ex){ 
-    		return false;
-    	}
+    	RedProtect.logger.severe("EntityType: "+e.getType().getName());
+    	return Sponge.getGame().getRegistry().getType(EntityType.class, e.getType().getName()).isPresent();
     }
     
     static void SaveToZipYML(File file, String ZippedFile, CommentedConfigurationNode yml){
@@ -267,8 +256,8 @@ public class RPUtil {
             		origupdt++;
             	}
             	
-            	List<String> ownersl = r.getOwners();
-            	List<String> membersl = r.getMembers();        	
+        		LinkedList<String> ownersl = r.getOwners();
+        		LinkedList<String> membersl = r.getMembers();        	
             	for (int o = 0; o < ownersl.size(); o++){
             		String pname = ownersl.get(o);
             		if (!isUUID(pname) && pname != null){
@@ -451,7 +440,7 @@ public class RPUtil {
 		                	st.close();
 		                }          
 		                st = dbcon.createStatement();
-		                RedProtect.logger.debug("Region info - Region: "+ r.getName() +" | Creator:" + r.getCreator() + "(Size: "+r.getArea()+")");
+		                RedProtect.logger.debug("default","Region info - Region: "+ r.getName() +" | Creator:" + r.getCreator() + "(Size: "+r.getArea()+")");
 		                st.executeUpdate("INSERT INTO region (name,creator,owners,members,maxMbrX,minMbrX,maxMbrZ,minMbrZ,maxy,miny,centerX,centerZ,date,wel,prior,value,world) VALUES "
 		                		+ "('" +r.getName() + "', '" + 
 		                		r.getCreator().toString() + "', '" + 
@@ -577,7 +566,7 @@ public class RPUtil {
 	
 	private static boolean checkDBExists(String dbname) throws SQLException {
         try {
-        	RedProtect.logger.debug("Checking if database exists... " + dbname);
+        	RedProtect.logger.debug("default","Checking if database exists... " + dbname);
         	Connection con = DriverManager.getConnection("jdbc:mysql://"+RedProtect.cfgs.getString("mysql.host")+"/",RedProtect.cfgs.getString("mysql.user-name"), RedProtect.cfgs.getString("mysql.user-pass"));
             DatabaseMetaData meta = con.getMetaData();
             ResultSet rs = meta.getCatalogs();
@@ -687,7 +676,7 @@ public class RPUtil {
     	if (item.get(Keys.ITEM_LORE).isPresent()){
     		try{
     			String lore = item.get(Keys.ITEM_LORE).get().get(1).toString();
-    			if (RedProtect.cfgs.getDefFlags().contains(lore.replace("§0", "")) || lore.equals(RedProtect.cfgs.getGuiString("separator"))){
+    			if (RedProtect.cfgs.getDefFlags().contains(lore.replace("ï¿½0", "")) || lore.equals(RedProtect.cfgs.getGuiString("separator"))){
     				return true;
     			}
     		} catch (IndexOutOfBoundsException ex){    			

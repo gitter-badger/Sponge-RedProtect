@@ -11,6 +11,7 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.explosive.Explosive;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.living.Ambient;
+import org.spongepowered.api.entity.living.Aquatic;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.Villager;
 import org.spongepowered.api.entity.living.animal.Animal;
@@ -29,7 +30,10 @@ import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.entity.projectile.LaunchProjectileEvent;
+import org.spongepowered.api.event.filter.IsCancelled;
+import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.item.ItemTypes;
+import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
@@ -42,53 +46,49 @@ import br.net.fabiozumbi12.redprotect.Region;
 public class RPEntityListener {
 	
 	public RPEntityListener(){
-		RedProtect.logger.debug("Loaded RPEntityListener...");
+		RedProtect.logger.debug("default","Loaded RPEntityListener...");
 	}
 	
     static RPContainer cont = new RPContainer();     
         
     @Listener
+    @IsCancelled(Tristate.FALSE)
     public void onCreatureSpawn(SpawnEntityEvent event) {
-    	if (event.isCancelled()) {
-            return;
-        }
     	
     	for (Entity e:event.getEntities()){ 
-            
-            
+                        
             if (!(e instanceof Living)){
             	return;
             }
-            
-            RedProtect.logger.debug("Spawn monster " + e.getType().getName());
             
             if (e instanceof Monster) {
             	Location<World> l = e.getLocation();
                 Region r = RedProtect.rm.getTopRegion(l);
                 if (r != null && !r.canSpawnMonsters()){
-                	RedProtect.logger.debug("Cancelled spawn of monster " +  e.getType().getName());
+                	RedProtect.logger.debug("spawn","Cancelled spawn of monster " +  e.getType().getName());
                     event.setCancelled(true);
+                    return;
                 }
             }
-            if (e instanceof Animal || e instanceof Golem || e instanceof Ambient) {
+            if (e instanceof Animal || e instanceof Golem || e instanceof Ambient || e instanceof Aquatic) {
             	Location<World> l = e.getLocation();
                 Region r = RedProtect.rm.getTopRegion(l);
                 if (r != null && !r.canSpawnPassives()) {
-                	RedProtect.logger.debug("Cancelled spawn of animal " + e.getType().getName());
+                	RedProtect.logger.debug("spawn","Cancelled spawn of animal " + e.getType().getName());
                     event.setCancelled(true);
+                    return;
                 }
             }
+            RedProtect.logger.debug("spawn","RPEntityListener - Spawn mob " + e.getType().getName());
     	}    	
     }
     
     @Listener
     public void onEntityDamage(DamageEntityEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }        
-        
+    	
         //victim
         Entity e1 = e.getTargetEntity();
+        RedProtect.logger.debug("default","RPEntityListener - DamageEntityEvent entity target "+e1.getType().getName());
         Region r = RedProtect.rm.getTopRegion(e1.getLocation());
         if (e1 instanceof Player){        	
         	if (r != null && r.flagExists("invincible")){
@@ -114,7 +114,7 @@ public class RPEntityListener {
             return;
         }
         Entity e2 = e.getCause().first(Living.class).get();
-        RedProtect.logger.debug("RPEntityListener - Is EntityDamageByEntityEvent event."); 
+        RedProtect.logger.debug("default","RPEntityListener - DamageEntityEvent damager "+e2.getType().getName()); 
         
         if (e2 instanceof Projectile) {
         	Projectile a = (Projectile)e2;                
@@ -130,10 +130,10 @@ public class RPEntityListener {
         Region r1 = RedProtect.rm.getTopRegion(e1.getLocation());
         Region r2 = RedProtect.rm.getTopRegion(e2.getLocation());
                     
-        if (e.getCause().first(Lightning.class).isPresent() || 
-        		e.getCause().first(Explosive.class).isPresent() || 
-        		e.getCause().first(Fireball.class).isPresent() || 
-        		e.getCause().first(Explosion.class).isPresent()){           	
+        if (e.getCause().containsType(Lightning.class) || 
+        		e.getCause().containsType(Explosive.class) || 
+        		e.getCause().containsType(Fireball.class) || 
+        		e.getCause().containsType(Explosion.class)){           	
         	if (r1 != null && !r1.canFire() && !(e2 instanceof Player)){
         		e.setCancelled(true);
         		return;
@@ -199,7 +199,7 @@ public class RPEntityListener {
         } 
         else if ((e1 instanceof Hanging) && e2 instanceof Monster){
         	if (r1 != null || r2 != null){
-        		RedProtect.logger.debug("Cancelled ItemFrame drop Item");
+        		RedProtect.logger.debug("default","Cancelled ItemFrame drop Item");
         		e.setCancelled(true);
                 return;
         	}
@@ -214,13 +214,12 @@ public class RPEntityListener {
         
     @Listener
     public void onPotionSplash(LaunchProjectileEvent event) {
-    	if (event.isCancelled()) {
-            return;
-        }
     	
     	if (event.getTargetEntity() instanceof ThrownPotion){
     		ThrownPotion potion = (ThrownPotion) event.getTargetEntity();
     		ProjectileSource thrower = potion.getShooter();    		
+    		
+    		RedProtect.logger.debug("default","RPEntityListener - LaunchProjectileEvent entity "+event.getTargetEntity().getType().getName()); 
     		
     		List<PotionEffect> pottypes = potion.get(Keys.POTION_EFFECTS).get();
     		for (PotionEffect t:pottypes){
@@ -245,6 +244,8 @@ public class RPEntityListener {
                 return;
             }
             
+            RedProtect.logger.debug("default","RPEntityListener - LaunchProjectileEvent shooter "+shooter.getName()); 
+            
             Entity e2 = event.getTargetEntity();
             Region r = RedProtect.rm.getTopRegion(e2.getLocation());
             if (e2 instanceof Player){
@@ -262,21 +263,14 @@ public class RPEntityListener {
     }
     
     @Listener
-	public void onInteractEvent(InteractEntityEvent.Secondary e){
-    	if (e.isCancelled()) {
-            return;
-        }
-    	
-    	if (!e.getCause().first(Player.class).isPresent()){
-			return;
-		}
-		Player p = e.getCause().first(Player.class).get();
-		
+	public void onInteractEvent(InteractEntityEvent.Secondary e, @First Player p){
 		Entity et = e.getTargetEntity();
 		Location<World> l = et.getLocation();
 		Region r = RedProtect.rm.getTopRegion(l);	
 		
-		if (r != null && !r.canInteractPassives(p) && (et instanceof Animal || et instanceof Villager || et instanceof Golem)) {
+		RedProtect.logger.debug("default","RPEntityListener - InteractEntityEvent.Secondary entity "+et.getType().getName()); 
+		
+		if (r != null && !r.canInteractPassives(p) && (et instanceof Animal || et instanceof Villager || et instanceof Golem || et instanceof Ambient)) {
 			if (et instanceof Horse && ((Horse)et).getHorseData().get(Keys.TAMED_OWNER).isPresent()){
 				Horse tam = (Horse) et;
 				Player owner = RedProtect.serv.getPlayer(tam.getHorseData().get(Keys.TAMED_OWNER).get().get()).get();
@@ -290,16 +284,11 @@ public class RPEntityListener {
 	}
       
     @Listener
-    public void WitherBlockBreak(ChangeBlockEvent.Break event) {
-    	if (event.isCancelled()) {
-            return;
-        }
-    	RedProtect.logger.debug("Is EntityChangeBlockEvent event");
-    	Entity e = event.getCause().first(Entity.class).get();    
-    	
+    public void WitherBlockBreak(ChangeBlockEvent.Break event, @First Entity e) {    	    	
     	if (e instanceof Monster) {
     		for (Transaction<BlockSnapshot> bt:event.getTransactions()){
     			BlockSnapshot b = bt.getOriginal();
+    			RedProtect.logger.debug("default","RPEntityListener - Is EntityChangeBlockEvent event! Block "+b.getState().getType().getName());
     			Region r = RedProtect.rm.getTopRegion(b.getLocation().get());
                 if (!cont.canWorldBreak(b)){        		        		
             		event.setCancelled(true);

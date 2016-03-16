@@ -1,6 +1,7 @@
 package br.net.fabiozumbi12.redprotect;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.spongepowered.api.entity.living.player.Player;
@@ -10,7 +11,7 @@ import org.spongepowered.api.world.World;
 
 class DefineRegionBuilder extends RegionBuilder{
 	
-    public DefineRegionBuilder(Player p, Location<World> loc1, Location<World> loc2, String regionName, String creator, List<String> owners) {  	
+    public DefineRegionBuilder(Player p, Location<World> loc1, Location<World> loc2, String regionName, String creator, LinkedList<String> owners) {  	
         String pName = p.getUniqueId().toString();
         if (!RedProtect.OnlineMode){
         	pName = p.getName().toLowerCase();
@@ -61,7 +62,7 @@ class DefineRegionBuilder extends RegionBuilder{
         	maxy = 256;
         }
         
-        Region region = new Region(regionName, owners, new ArrayList<String>(), creator, new int[] { loc1.getBlockX(), loc1.getBlockX(), loc2.getBlockX(), loc2.getBlockX() }, new int[] { loc1.getBlockZ(), loc1.getBlockZ(), loc2.getBlockZ(), loc2.getBlockZ() }, miny, maxy, 0, p.getWorld().getName(), RPUtil.DateNow(), RedProtect.cfgs.getDefFlagsValues(), wmsg, 0, null);
+        Region region = new Region(regionName, owners, new LinkedList<String>(), creator, new int[] { loc1.getBlockX(), loc1.getBlockX(), loc2.getBlockX(), loc2.getBlockX() }, new int[] { loc1.getBlockZ(), loc1.getBlockZ(), loc2.getBlockZ(), loc2.getBlockZ() }, miny, maxy, 0, p.getWorld().getName(), RPUtil.DateNow(), RedProtect.cfgs.getDefFlagsValues(), wmsg, 0, null);
         
         region.setPrior(RPUtil.getUpdatedPrior(region));            
             	

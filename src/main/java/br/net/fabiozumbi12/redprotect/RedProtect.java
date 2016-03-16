@@ -24,16 +24,12 @@ import org.spongepowered.api.world.World;
 
 import br.net.fabiozumbi12.redprotect.listeners.RPBlockListener;
 import br.net.fabiozumbi12.redprotect.listeners.RPEntityListener;
-//import br.net.fabiozumbi12.RedProtect.listeners.RPGlobalListener;
-//import br.net.fabiozumbi12.RedProtect.listeners.RPMine18;
-//import br.net.fabiozumbi12.RedProtect.listeners.RPPlayerListener;
-//import br.net.fabiozumbi12.RedProtect.listeners.RPWorldListener;
 import br.net.fabiozumbi12.redprotect.listeners.RPGlobalListener;
 import br.net.fabiozumbi12.redprotect.listeners.RPMine18;
 import br.net.fabiozumbi12.redprotect.listeners.RPPlayerListener;
 import br.net.fabiozumbi12.redprotect.listeners.RPWorldListener;
 
-@Plugin(id = "br.net.fabiozumbi12.redprotect", name = "RedProtect", version = "6.4")
+@Plugin(id = "br.net.fabiozumbi12.redprotect", name = "RedProtect", version = "6.4.0")
 public class RedProtect {
 	public static Game game;
 	public static PluginContainer plugin;
@@ -115,7 +111,7 @@ public class RedProtect {
 			
 			taskid = Sponge.getScheduler().createSyncExecutor(RedProtect.plugin).scheduleWithFixedDelay(new Runnable() { 
 				public void run() {
-					RedProtect.logger.debug("Auto-save Scheduler: Saving "+cfgs.getString("file-type")+" database!");
+					RedProtect.logger.debug("default","Auto-save Scheduler: Saving "+cfgs.getString("file-type")+" database!");
 					rm.saveAll();
 					} 
 				},cfgs.getInt("flat-file.auto-save-interval-seconds"), cfgs.getInt("flat-file.auto-save-interval-seconds"), TimeUnit.SECONDS).getTask().getUniqueId();	

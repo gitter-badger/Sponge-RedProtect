@@ -29,7 +29,7 @@ import br.net.fabiozumbi12.redprotect.Region;
 public class RPMine18 {
 	
 	public RPMine18(){
-		RedProtect.logger.debug("Loaded RPMine18...");
+		RedProtect.logger.debug("default","Loaded RPMine18...");
 	}
 	
 	static RPContainer cont = new RPContainer();    
@@ -145,7 +145,7 @@ public class RPMine18 {
     
 	@Listener
 	public void onBlockExplode(ExplosionEvent.Detonate e){
-		RedProtect.logger.debug("Is BlockListener - BlockExplodeEvent event");
+		RedProtect.logger.debug("default","Is BlockListener - BlockExplodeEvent event");
 		
 		for (Transaction<BlockSnapshot> bex:e.getTransactions()){
 			BlockSnapshot b = bex.getOriginal();

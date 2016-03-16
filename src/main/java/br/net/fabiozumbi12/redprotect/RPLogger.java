@@ -29,8 +29,8 @@ public class RPLogger{
     	Sponge.getServer().getConsole().sendMessage(RPUtil.toText("Redprotect: ["+s+"]"));
     }
     
-    public void debug(String s) {
-        if (RedProtect.cfgs.getBool("debug-messages")) {        	
+    public void debug(String level, String s) {
+        if (RedProtect.cfgs.getBool("debug-messages."+level)) {        	
         	Sponge.getServer().getConsole().sendMessage(RPUtil.toText("Redprotect: [&b"+s+"&r]"));
         }  
     }

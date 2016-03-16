@@ -30,8 +30,8 @@ public class EncompassRegionBuilder extends RegionBuilder{
         BlockSnapshot next = null;
         BlockSnapshot first = null;
         String regionName = e.getText().asList().get(1).toPlain();
-        List<Integer> px = new LinkedList<Integer>();
-        List<Integer> pz = new LinkedList<Integer>();
+        LinkedList<Integer> px = new LinkedList<Integer>();
+        LinkedList<Integer> pz = new LinkedList<Integer>();
         BlockSnapshot bFirst1 = null;
         BlockSnapshot bFirst2 = null;
         List<BlockSnapshot> blocks = new LinkedList<BlockSnapshot>();
@@ -100,7 +100,7 @@ public class EncompassRegionBuilder extends RegionBuilder{
                 if (i != 0) {
                     blocks.add(current);
                     if (current.equals(first)) {
-                        List<String> owners = new LinkedList<String>();
+                    	LinkedList<String> owners = new LinkedList<String>();
                         owners.add(pName);
                             if (owner1 == null) {
                             	sign.offer(e.getText().set(sign.getValue(Keys.SIGN_LINES).get().set(2, RPUtil.toText("--"))));
@@ -139,7 +139,7 @@ public class EncompassRegionBuilder extends RegionBuilder{
                         }
                         
                         
-                        Region region = new Region(regionName, owners, new ArrayList<String>(), owners.get(0), rx, rz, 0, 256, 0, w.getName(), RPUtil.DateNow(), RedProtect.cfgs.getDefFlagsValues(), "", 0, null);
+                        Region region = new Region(regionName, owners, new LinkedList<String>(), owners.get(0), rx, rz, 0, 256, 0, w.getName(), RPUtil.DateNow(), RedProtect.cfgs.getDefFlagsValues(), "", 0, null);
                         
                         List<String> othersName = new ArrayList<String>();
                         Region otherrg = null;
@@ -159,7 +159,7 @@ public class EncompassRegionBuilder extends RegionBuilder{
                         for (Location<World> loc:region.getLimitLocs(b.getLocation().get().getBlockY())){
                         	otherrg = RedProtect.rm.getTopRegion(loc);
                         	
-                        	RedProtect.logger.debug("protection Block is: " + loc.getBlock().getType().getName());
+                        	RedProtect.logger.debug("default","protection Block is: " + loc.getBlock().getType().getName());
                         	
                         	if (!loc.getBlock().getType().getName().contains(RedProtect.cfgs.getString("region-settings.block-id"))){
                         		this.setErrorSign(e, RPUtil.toText(RPLang.get("regionbuilder.neeberetangle")));

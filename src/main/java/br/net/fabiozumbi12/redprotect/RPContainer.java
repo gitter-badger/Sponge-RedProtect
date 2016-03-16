@@ -9,7 +9,6 @@ import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.manipulator.mutable.block.DirectionalData;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
 public class RPContainer {
@@ -31,6 +30,10 @@ public class RPContainer {
             	for (int sz = -1; sz <= 1; sz++){
             		
             		BlockSnapshot bsb = w.createSnapshot(x+sx, y, z+sz);            		
+            		
+            		if (!bsb.getLocation().get().getTileEntity().isPresent()){
+            			return true;
+            		}            		
             		TileEntity bs = bsb.getLocation().get().getTileEntity().get();
             		
     				if (bs instanceof Sign && !validateOpenBlock(bs, p) && getBlockRelative(bs).getExtendedState().getType().getName().equals(b.getExtendedState().getType().getName())){
@@ -47,7 +50,11 @@ public class RPContainer {
     					for (int ux = -1; ux <= 1; ux++){
     						for (int uz = -1; uz <= 1; uz++){
 
-    							BlockSnapshot bub = w.createSnapshot(x2+ux, y2, z2+uz);            		
+    							BlockSnapshot bub = w.createSnapshot(x2+ux, y2, z2+uz);  
+    							
+    							if (!bub.getLocation().get().getTileEntity().isPresent()){
+    		            			return true;
+    		            		} 
     		            		TileEntity bu = bub.getLocation().get().getTileEntity().get();
     		            		
     	        				if (bu instanceof Sign && !validateOpenBlock(bu, p) && getBlockRelative(bu).getExtendedState().getType().getName().equals(b.getExtendedState().getType().getName())){
@@ -75,7 +82,11 @@ public class RPContainer {
         int z = b.getLocation().get().getBlockZ();
         World w = p.getWorld();
 
-        TileEntity b1 = b.getLocation().get().getTileEntity().get();        
+        if (!b.getLocation().get().getTileEntity().isPresent()){
+			return true;
+		} 
+        TileEntity b1 = b.getLocation().get().getTileEntity().get();   
+        
         if (b1 instanceof Sign && !validateBreakSign(b1, p)){
 			return false;
     	}   		
@@ -87,7 +98,11 @@ public class RPContainer {
         		for (int sy = -1; sy <= 1; sy++){
         			for (int sz = -1; sz <= 1; sz++){
         				
-        				BlockSnapshot bsb = w.createSnapshot(x+sx, y, z+sz);            		
+        				BlockSnapshot bsb = w.createSnapshot(x+sx, y, z+sz);   
+        				
+        				if (!bsb.getLocation().get().getTileEntity().isPresent()){
+	            			return true;
+	            		} 
                 		TileEntity bs = bsb.getLocation().get().getTileEntity().get();
                 		
         				if (bs instanceof Sign && !validateBreakSign(bs, p) && getBlockRelative(bs).getExtendedState().getType().getName().equals(b.getExtendedState().getType().getName())){
@@ -105,7 +120,11 @@ public class RPContainer {
             	        		for (int uy = -1; uy <= 1; uy++){
             	        			for (int uz = -1; uz <= 1; uz++){
 
-            	        				BlockSnapshot bub = w.createSnapshot(x2+sx, y2, z2+sz);            		
+            	        				BlockSnapshot bub = w.createSnapshot(x2+sx, y2, z2+sz);   
+            	        				
+            	        				if (!bub.getLocation().get().getTileEntity().isPresent()){
+            		            			return true;
+            		            		} 
             	                		TileEntity bu = bub.getLocation().get().getTileEntity().get();
             	                		
             	        				if (bu instanceof Sign && !validateBreakSign(bu, p) && getBlockRelative(bu).getExtendedState().getType().getName().equals(b.getExtendedState().getType().getName())){
@@ -141,7 +160,7 @@ public class RPContainer {
         TileEntity b1 = b.getLocation().get().getTileEntity().get(); 
         
         if (b1 instanceof Sign && validatePrivateSign(b1)){
-        	RedProtect.logger.debug("Valid Sign on canWorldBreak!");
+        	RedProtect.logger.debug("default","Valid Sign on canWorldBreak!");
 			return false;
     	}   		
            		
@@ -152,7 +171,12 @@ public class RPContainer {
         		for (int sz = -1; sz <= 1; sz++){
         			
         			BlockSnapshot bsb = w.createSnapshot(x+sx, y, z+sz);
+        			
+        			if (!bsb.getLocation().get().getTileEntity().isPresent()){
+            			return true;
+            		} 
         			TileEntity bs = bsb.getLocation().get().getTileEntity().get();
+        			
     				if (bs instanceof Sign && validatePrivateSign(bs)){
     					return false;
                 	}
@@ -169,6 +193,10 @@ public class RPContainer {
     						for (int uz = -1; uz <= 1; uz++){
     							
     							BlockSnapshot bub = w.createSnapshot(x2+ux, y2, z2+uz);
+    							
+    							if (!bub.getLocation().get().getTileEntity().isPresent()){
+    		            			return true;
+    		            		} 
     							TileEntity bu = bub.getLocation().get().getTileEntity().get();
     	        				if (bu instanceof Sign && validatePrivateSign(bu)){
     	        					return false;
@@ -221,11 +249,8 @@ public class RPContainer {
 		return true;
 	}
 	    
-	public boolean isContainer(BlockSnapshot block){    	
-    	Location<World> loc = block.getLocation().get();    	    	
-    	BlockSnapshot container = loc.getRelative(block.getLocation().get().get(DirectionalData.class).get().direction().get()).createSnapshot();
-	    String signbtype = container.getExtendedState().getType().getName(); 
-	    if (RedProtect.cfgs.getStringList("private.allowed-blocks").contains(signbtype)){
+	public boolean isContainer(BlockSnapshot block){
+	    if (RedProtect.cfgs.getStringList("private.allowed-blocks").contains(block.getState().getType().getName())){
 	    	return true;
 	    }
 	    return false;
