@@ -517,6 +517,8 @@ public class RPPlayerListener{
     		tcause = e.getCause().first(TeleportCause.class).get().getTeleportType();
     	}
     	
+    	//RedProtect.logger.debug("player","RPLayerListener: Is DisplaceEntityEvent.Teleport event. Player: "+p.getName()+", cause: "+tcause.getId()); 
+    	
     	if (RedProtect.tpWait.contains(p.getName())){
     		RedProtect.tpWait.remove(p.getName());
     		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
@@ -673,7 +675,7 @@ public class RPPlayerListener{
     		RedProtect.tpWait.remove(p.getName());
     		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
     	}
-    	
+    	    	    	
     	Location<World> lfrom = e.getFromTransform().getLocation();
     	Location<World> lto = e.getToTransform().getLocation();
     	
@@ -931,8 +933,7 @@ public class RPPlayerListener{
     	String m = "";
     	//Enter-Exit notifications    
         if (r.getWelcome().equals("")){
-			if (RedProtect.cfgs.getString("notify.region-enter-mode").equalsIgnoreCase("BOSSBAR")
-	    			|| RedProtect.cfgs.getString("notify.region-enter-mode").equalsIgnoreCase("CHAT")){
+			if (RedProtect.cfgs.getString("notify.region-enter-mode").equalsIgnoreCase("CHAT")){
 				for (int i = 0; i < r.getOwners().size(); ++i) {
     				ownerstring = ownerstring + ", " + RPUtil.UUIDtoPlayer(r.getOwners().get(i)); 
     	        }
