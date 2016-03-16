@@ -61,13 +61,13 @@ public class RPUtil {
     	return Sponge.getGame().getRegistry().getType(EntityType.class, e.getType().getName()).isPresent();
     }
     
-    static void SaveToZipYML(File file, String ZippedFile, CommentedConfigurationNode yml){
+    static void saveToZipFile(File file, String ZippedFile, CommentedConfigurationNode conf){
     	try{
     		final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(file));
             ZipEntry e = new ZipEntry(ZippedFile);
             out.putNextEntry(e);
 
-            byte[] data = yml.toString().getBytes();
+            byte[] data = conf.toString().getBytes();
             out.write(data, 0, data.length);
             out.closeEntry();
             out.close();
@@ -415,8 +415,8 @@ public class RPUtil {
     	return obj;
     }
     
-	static boolean ymlToMysql() throws Exception{
-		if (!RedProtect.cfgs.getString("file-type").equalsIgnoreCase("yml")){
+	static boolean fileToMysql() throws Exception{
+		if (!RedProtect.cfgs.getString("file-type").equalsIgnoreCase("file")){
 			return false;
 		}
 		

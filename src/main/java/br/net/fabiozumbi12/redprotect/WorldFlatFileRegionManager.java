@@ -79,9 +79,9 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
             RedProtect.logger.debug("default","RegionManager.Save(): File type is " + RedProtect.cfgs.getString("file-type"));
             String world = this.getWorld().getName();
                   
-            if (RedProtect.cfgs.getString("file-type").equals("yml")) {            	
+            if (RedProtect.cfgs.getString("file-type").equals("file")) {            	
             	
-            	File tempRegionFile = new File(RedProtect.configDir+"data", "data_" + world + ".yml");    
+            	File tempRegionFile = new File(RedProtect.configDir+"data", "data_" + world + ".conf");    
             	if (!tempRegionFile.exists()) {
             		tempRegionFile.createNewFile();
             	}
@@ -158,7 +158,7 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
         
         //Save backup
         if (RPUtil.genFileName(folder.getPath()+File.separator, true) != null){
-        	RPUtil.SaveToZipYML(RPUtil.genFileName(folder.getPath()+File.separator, true), "data_" + this.world.getName() + ".yml", fileDB); 
+        	RPUtil.saveToZipFile(RPUtil.genFileName(folder.getPath()+File.separator, true), "data_" + this.world.getName() + ".conf", fileDB); 
         }
 		       
     }
@@ -182,13 +182,13 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
     public void load() {   
     	try {
             String world = this.getWorld().getName();
-            if (RedProtect.cfgs.getString("file-type").equals("yml")) {        	
-            	File oldf = new File(RedProtect.configDir+"data"+File.separator+world + ".yml");
-            	File newf = new File(RedProtect.configDir+"data"+File.separator+"data_" + world + ".yml");
+            if (RedProtect.cfgs.getString("file-type").equals("file")) {        	
+            	File oldf = new File(RedProtect.configDir+"data"+File.separator+world + ".conf");
+            	File newf = new File(RedProtect.configDir+"data"+File.separator+"data_" + world + ".conf");
                 if (oldf.exists()){
                 	oldf.renameTo(newf);
                 }            
-                this.load(RedProtect.configDir+"data"+File.separator+"data_" + world + ".yml");        	
+                this.load(RedProtect.configDir+"data"+File.separator+"data_" + world + ".conf");        	
             }
 			} catch (FileNotFoundException | ClassNotFoundException e) {
 				e.printStackTrace();
@@ -198,8 +198,8 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
 	private void load(String path) throws FileNotFoundException, ClassNotFoundException {
         String world = this.getWorld().getName();        
 
-        if (RedProtect.cfgs.getString("file-type").equals("yml")) {        	
-        	RedProtect.logger.debug("default","Load world " + this.world.getName() + ". File type: yml");
+        if (RedProtect.cfgs.getString("file-type").equals("file")) {        	
+        	RedProtect.logger.debug("default","Load world " + this.world.getName() + ". File type: conf");
         	
         	try {
         		File tempRegionFile = new File(path);    

@@ -20,6 +20,7 @@ import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.living.ArmorStand;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.projectile.Projectile;
@@ -505,6 +506,114 @@ public class RPPlayerListener{
         }	
 	}
 
+
+    @Listener
+    public void onPlayerMovement(DisplaceEntityEvent.Move e){
+    	if (!(e.getTargetEntity() instanceof Player) || RedProtect.cfgs.getBool("performance.disable-onPlayerMoveEvent-handler")) {
+            return;
+        }
+    	
+    	Player p = (Player) e.getTargetEntity();
+    	
+    	if (e.getFromTransform() != e.getToTransform() && RedProtect.tpWait.contains(p.getName())){
+    		RedProtect.tpWait.remove(p.getName());
+    		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
+    	}
+    	    	    	
+    	Location<World> lfrom = e.getFromTransform().getLocation();
+    	Location<World> lto = e.getToTransform().getLocation();
+    	
+    	
+    	//teleport player to coord/world if playerup 128 y
+    	int NetherY = RedProtect.cfgs.getInt("netherProtection.maxYsize");
+    	if (lto.getExtent().getDimension().getType().equals(DimensionTypes.NETHER) && NetherY != -1 && lto.getBlockY() >= NetherY && !p.hasPermission("redprotect.bypass.nether-roof")){
+    		for (String cmd:RedProtect.cfgs.getStringList("netherProtection.execute-cmd")){
+        		RedProtect.game.getCommandManager().process(RedProtect.serv.getConsole(), cmd.replace("{player}", p.getName()));
+    		}
+    		RPLang.sendMessage(p, RPLang.get("playerlistener.upnethery").replace("{location}", NetherY+""));
+    	}
+    	
+    	
+        Region r = RedProtect.rm.getTopRegion(lto);
+        
+        /*
+        //deny enter if no perm doors
+    	String door = lto.getBlock().getType().getName();
+    	if (r != null && (door.contains("DOOR") || door.contains("_GATE")) && !r.canDoor(p)){
+    		if (RPDoor.isDoorClosed(p.getWorld().getBlockAt(lto))){
+    			e.setCancelled(true);
+    		}
+    	}*/
+    	World w = lfrom.getExtent();
+    	
+    	if (r != null){    		
+    		
+            //Enter flag
+            if (!r.canEnter(p)){
+        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
+        		RPLang.sendMessage(p, "playerlistener.region.cantregionenter");			
+        	}
+            
+            //Allow enter with items
+            if (!r.canEnterWithItens(p)){
+        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
+        		RPLang.sendMessage(p, RPLang.get("playerlistener.region.onlyenter.withitems").replace("{items}", r.flags.get("allow-enter-items").toString()));			
+        	}
+            
+            //Deny enter with item
+            if (!r.denyEnterWithItens(p)){
+        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
+        		RPLang.sendMessage(p, RPLang.get("playerlistener.region.denyenter.withitems").replace("{items}", r.flags.get("deny-enter-items").toString()));			
+        	}
+            
+            //update region owner or member visit
+            if (RedProtect.cfgs.getString("region-settings.record-player-visit-method").equalsIgnoreCase("ON-REGION-ENTER")){
+        		if (r.isMember(p) || r.isOwner(p)){
+                	if (r.getDate() == null || (r.getDate() != RPUtil.DateNow())){
+                		r.setDate(RPUtil.DateNow());
+                	}        	
+        		}
+        	}
+            
+            if (Ownerslist.get(p) != r.getName()){ 
+    			Region er = RedProtect.rm.getRegion(Ownerslist.get(p), p.getWorld());			
+    			Ownerslist.put(p, r.getName());
+    			
+    			//Execute listener:
+    			//EnterExitRegionEvent event = new EnterExitRegionEvent(er, r, p);
+    			//Sponge.getPluginManager().callEvent(event);
+    			if (e.isCancelled()){
+    				return;
+    			}
+    			//--
+    			RegionFlags(r, er, p);	
+    			if (!r.getWelcome().equalsIgnoreCase("hide ")){
+    				EnterExitNotify(r, p);
+    			}        		
+        	}
+    	} else {
+    		//if (r == null) >>
+    		if (Ownerslist.get(p) != null) { 
+    			Region er = RedProtect.rm.getRegion(Ownerslist.get(p), p.getWorld());    
+    			if (Ownerslist.containsKey(p)){
+            		Ownerslist.remove(p);
+            	}
+    			
+    			//Execute listener:
+    			//EnterExitRegionEvent event = new EnterExitRegionEvent(er, r, p);
+    			//Bukkit.getPluginManager().callEvent(event);    			
+    			if (e.isCancelled()){
+    				return;
+    			}
+    			//---
+    			noRegionFlags(er, p);    	
+    			if (er != null && !er.getWelcome().equalsIgnoreCase("hide ") && RedProtect.cfgs.getBool("notify.region-exit")){
+    				SendNotifyMsg(p, RPLang.get("playerlistener.region.wilderness"));
+    			}    			
+        	}   			
+    	}  	
+    }
+    
 	@Listener
     public void onPlayerTeleport(DisplaceEntityEvent.Teleport e){
     	if (!(e.getTargetEntity() instanceof Player)){
@@ -517,7 +626,7 @@ public class RPPlayerListener{
     		tcause = e.getCause().first(TeleportCause.class).get().getTeleportType();
     	}
     	
-    	//RedProtect.logger.debug("player","RPLayerListener: Is DisplaceEntityEvent.Teleport event. Player: "+p.getName()+", cause: "+tcause.getId()); 
+    	RedProtect.logger.debug("player","RPLayerListener: Is DisplaceEntityEvent.Teleport event. Player: "+p.getName()+", cause: "+tcause.getId()); 
     	
     	if (RedProtect.tpWait.contains(p.getName())){
     		RedProtect.tpWait.remove(p.getName());
@@ -662,114 +771,7 @@ public class RPPlayerListener{
     		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
     	}
     }
-    
-    @Listener
-    public void onPlayerMovement(DisplaceEntityEvent.Move e){
-    	if (!(e.getTargetEntity() instanceof Player) || RedProtect.cfgs.getBool("performance.disable-onPlayerMoveEvent-handler")) {
-            return;
-        }
-    	
-    	Player p = (Player) e.getTargetEntity();
-    	
-    	if (e.getFromTransform() != e.getToTransform() && RedProtect.tpWait.contains(p.getName())){
-    		RedProtect.tpWait.remove(p.getName());
-    		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
-    	}
-    	    	    	
-    	Location<World> lfrom = e.getFromTransform().getLocation();
-    	Location<World> lto = e.getToTransform().getLocation();
-    	
-    	
-    	//teleport player to coord/world if playerup 128 y
-    	int NetherY = RedProtect.cfgs.getInt("netherProtection.maxYsize");
-    	if (lto.getExtent().getDimension().getType().equals(DimensionTypes.NETHER) && NetherY != -1 && lto.getBlockY() >= NetherY && !p.hasPermission("redprotect.bypass.nether-roof")){
-    		for (String cmd:RedProtect.cfgs.getStringList("netherProtection.execute-cmd")){
-        		RedProtect.game.getCommandManager().process(RedProtect.serv.getConsole(), cmd.replace("{player}", p.getName()));
-    		}
-    		RPLang.sendMessage(p, RPLang.get("playerlistener.upnethery").replace("{location}", NetherY+""));
-    	}
-    	
-    	
-        Region r = RedProtect.rm.getTopRegion(lto);
         
-        /*
-        //deny enter if no perm doors
-    	String door = lto.getBlock().getType().getName();
-    	if (r != null && (door.contains("DOOR") || door.contains("_GATE")) && !r.canDoor(p)){
-    		if (RPDoor.isDoorClosed(p.getWorld().getBlockAt(lto))){
-    			e.setCancelled(true);
-    		}
-    	}*/
-    	World w = lfrom.getExtent();
-    	
-    	if (r != null){    		
-    		
-            //Enter flag
-            if (!r.canEnter(p)){
-        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
-        		RPLang.sendMessage(p, "playerlistener.region.cantregionenter");			
-        	}
-            
-            //Allow enter with items
-            if (!r.canEnterWithItens(p)){
-        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
-        		RPLang.sendMessage(p, RPLang.get("playerlistener.region.onlyenter.withitems").replace("{items}", r.flags.get("allow-enter-items").toString()));			
-        	}
-            
-            //Deny enter with item
-            if (!r.denyEnterWithItens(p)){
-        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
-        		RPLang.sendMessage(p, RPLang.get("playerlistener.region.denyenter.withitems").replace("{items}", r.flags.get("deny-enter-items").toString()));			
-        	}
-            
-            //update region owner or member visit
-            if (RedProtect.cfgs.getString("region-settings.record-player-visit-method").equalsIgnoreCase("ON-REGION-ENTER")){
-        		if (r.isMember(p) || r.isOwner(p)){
-                	if (r.getDate() == null || (r.getDate() != RPUtil.DateNow())){
-                		r.setDate(RPUtil.DateNow());
-                	}        	
-        		}
-        	}
-            
-            if (Ownerslist.get(p) != r.getName()){ 
-    			Region er = RedProtect.rm.getRegion(Ownerslist.get(p), p.getWorld());			
-    			Ownerslist.put(p, r.getName());
-    			
-    			//Execute listener:
-    			//EnterExitRegionEvent event = new EnterExitRegionEvent(er, r, p);
-    			//Sponge.getPluginManager().callEvent(event);
-    			if (e.isCancelled()){
-    				return;
-    			}
-    			//--
-    			RegionFlags(r, er, p);	
-    			if (!r.getWelcome().equalsIgnoreCase("hide ")){
-    				EnterExitNotify(r, p);
-    			}        		
-        	}
-    	} else {
-    		//if (r == null) >>
-    		if (Ownerslist.get(p) != null) { 
-    			Region er = RedProtect.rm.getRegion(Ownerslist.get(p), p.getWorld());    
-    			if (Ownerslist.containsKey(p)){
-            		Ownerslist.remove(p);
-            	}
-    			
-    			//Execute listener:
-    			//EnterExitRegionEvent event = new EnterExitRegionEvent(er, r, p);
-    			//Bukkit.getPluginManager().callEvent(event);    			
-    			if (e.isCancelled()){
-    				return;
-    			}
-    			//---
-    			noRegionFlags(er, p);    	
-    			if (er != null && !er.getWelcome().equalsIgnoreCase("hide ") && RedProtect.cfgs.getBool("notify.region-exit")){
-    				SendNotifyMsg(p, RPLang.get("playerlistener.region.wilderness"));
-    			}    			
-        	}   			
-    	}  	
-    }
-    
     private Location<World> DenyEnterPlayer(World wFrom, Location<World> from, Location<World> to, Player p, Region r) {
     	Location<World> setTo = to;
     	for (int i = 0; i < r.getArea()+10; i++){
@@ -825,26 +827,29 @@ public class RPPlayerListener{
     
     @Listener
     public void PlayerLogin(ClientConnectionEvent.Login e){
-    	if (e.getTargetUser().getPlayer().isPresent()){
-    		Player p = e.getTargetUser().getPlayer().get();
-        	//Adjust inside region
-        	//p.setLocation(new Location<World>(p.getWorld(), p.getLocation().getBlockX(), p.getLocation().getBlockY()+0.1, p.getLocation().getBlockZ()));
-        	
-        	if (p.hasPermission("redprotect.update") && RedProtect.Update && !RedProtect.cfgs.getBool("update-check.auto-update")){
-        		RPLang.sendMessage(p, "&bAn update is available for RedProtect: " + RedProtect.UptVersion);
-        		RPLang.sendMessage(p, "&bUse /rp update to download and automatically install this update.");
+    	RedProtect.logger.debug("player","Is ClientConnectionEvent.Login event. Player "+e.getTargetUser().getName());
+    	
+    	User p = e.getTargetUser();
+    	Location<World> l = e.getFromTransform().getLocation();
+    	//Adjust inside region
+    	e.setToTransform(new Transform<World>(new Location<World>(l.getExtent(), l.getBlockX(), l.getBlockY()+0.1, l.getBlockZ())));
+    	
+    	RedProtect.logger.debug("player","Is ClientConnectionEvent.Login event.");
+    	/*
+    	if (p.hasPermission("redprotect.update") && RedProtect.Update && !RedProtect.cfgs.getBool("update-check.auto-update")){
+    		RPLang.sendMessage(p, "&bAn update is available for RedProtect: " + RedProtect.UptVersion);
+    		RPLang.sendMessage(p, "&bUse /rp update to download and automatically install this update.");
+    	}
+    	*/
+    	if (RedProtect.cfgs.getString("region-settings.record-player-visit-method").equalsIgnoreCase("ON-LOGIN")){    		
+        	String uuid = p.getUniqueId().toString();
+        	if (!RedProtect.OnlineMode){
+        		uuid = p.getName().toLowerCase();
         	}
-        	
-        	if (RedProtect.cfgs.getString("region-settings.record-player-visit-method").equalsIgnoreCase("ON-LOGIN")){    		
-            	String uuid = p.getUniqueId().toString();
-            	if (!RedProtect.OnlineMode){
-            		uuid = p.getName().toLowerCase();
-            	}
-            	for (Region r:RedProtect.rm.getMemberRegions(uuid)){
-            		if (r.getDate() == null || !r.getDate().equals(RPUtil.DateNow())){
-            			r.setDate(RPUtil.DateNow());
-            		}
-            	}
+        	for (Region r:RedProtect.rm.getMemberRegions(uuid)){
+        		if (r.getDate() == null || !r.getDate().equals(RPUtil.DateNow())){
+        			r.setDate(RPUtil.DateNow());
+        		}
         	}
     	}    	    	
     }
