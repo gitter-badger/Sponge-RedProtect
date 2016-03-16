@@ -52,12 +52,12 @@ public class RPUtil {
     }
         
     public static boolean isBukkitBlock(BlockState b){
-    	RedProtect.logger.severe("BlockType: "+b.getType().getName());
+    	RedProtect.logger.debug("default","BlockType: "+b.getType().getName());
     	return b.getType().getName().startsWith("minecraft:");
     }
     
     public static boolean isBukkitEntity(Entity e){
-    	RedProtect.logger.severe("EntityType: "+e.getType().getName());
+    	RedProtect.logger.debug("default","EntityType: "+e.getType().getName());
     	return Sponge.getGame().getRegistry().getType(EntityType.class, e.getType().getName()).isPresent();
     }
     

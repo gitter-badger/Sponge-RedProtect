@@ -15,7 +15,6 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.entity.living.ArmorStand;
@@ -29,6 +28,7 @@ import org.spongepowered.api.entity.projectile.source.ProjectileSource;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
+import org.spongepowered.api.event.cause.entity.damage.source.IndirectEntityDamageSource;
 import org.spongepowered.api.event.cause.entity.teleport.TeleportCause;
 import org.spongepowered.api.event.cause.entity.teleport.TeleportType;
 import org.spongepowered.api.event.cause.entity.teleport.TeleportTypes;
@@ -192,7 +192,7 @@ public class RPPlayerListener{
         
         Region r = RedProtect.rm.getTopRegion(l);
         ItemType itemInHand = ItemTypes.NONE;
-        ItemStack stack = ItemStack.builder().itemType(ItemTypes.NONE).build();
+        ItemStack stack = ItemStack.of(ItemTypes.NONE,1);
         if (p.getItemInHand().isPresent()){
         	stack = p.getItemInHand().get();
         	itemInHand = stack.getItem();
@@ -204,7 +204,7 @@ public class RPPlayerListener{
         	event.setCancelled(true);
         }        
         
-        if (stack.getItem().getId().equalsIgnoreCase(RedProtect.cfgs.getString("wands.infoWandID"))) {
+        if (itemInHand.getId().equalsIgnoreCase(RedProtect.cfgs.getString("wands.infoWandID"))) {
         	r = RedProtect.rm.getTopRegion(l);
             if (p.hasPermission("redprotect.infowand")) {
                 if (r == null) {
@@ -399,6 +399,11 @@ public class RPPlayerListener{
         	return;
         }
         
+        if (RedProtect.tpWait.contains(p.getName())){
+    		RedProtect.tpWait.remove(p.getName());
+    		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
+    	}
+                
         if (ent instanceof Hanging || ent instanceof ArmorStand) {        	
             if (!r.canBuild(p)) {
                 RPLang.sendMessage(p, "playerlistener.region.cantedit");
@@ -422,6 +427,46 @@ public class RPPlayerListener{
     
     @Listener
     public void onEntityDamageEvent(DamageEntityEvent e) { 
+    	//victim
+    	Entity e1 = e.getTargetEntity(); 
+    	RedProtect.logger.debug("player","RPLayerListener: Is DamageEntityEvent event. Victim "+e1.getType().getName()); 
+    	
+    	//damager
+    	Entity e2 = null;
+    	    	
+    	if (e.getCause().first(IndirectEntityDamageSource.class).isPresent()){
+    		e2 = e.getCause().first(IndirectEntityDamageSource.class).get().getSource();
+    		RedProtect.logger.debug("player","RPLayerListener: Is DamageEntityEvent event. Damager "+e2.getType().getName()); 
+    	}
+    	
+    	Player damager = null;
+    	if (e2 instanceof Projectile){
+    		Projectile proj = (Projectile)e2;
+    		if (proj.getShooter() instanceof Player){
+    			damager = (Player) proj.getShooter();
+    		}
+    	} else if (e2 instanceof Player){
+    		damager = (Player) e2;
+    	}
+    	
+    	Location<World> l = e1.getLocation();
+        Region r = RedProtect.rm.getTopRegion(l);
+        if (r == null){
+        	return;
+        }        
+        if (e1 instanceof Hanging && !r.canBuild(damager)){
+        	RPLang.sendMessage(damager, "entitylistener.region.cantinteract");
+            e.setCancelled(true);
+            return;
+        }         
+        if (e1 instanceof Player && r.flagExists("pvp") && !r.canPVP(damager)){
+        	RPLang.sendMessage(damager, "entitylistener.region.cantpvp");
+            e.setCancelled(true);
+            return;
+        }
+        
+        
+        //return if not player
     	if (!(e.getTargetEntity() instanceof Player)){
     		return;
     	}
@@ -433,7 +478,6 @@ public class RPPlayerListener{
     		RPLang.sendMessage(play, RPLang.get("cmdmanager.region.tpcancelled"));
     	}
 		
-    	Region r = RedProtect.rm.getTopRegion(play.getLocation());
     	if (r != null && !r.canPlayerDamage()){
     		e.setCancelled(true);
     	}
@@ -455,58 +499,23 @@ public class RPPlayerListener{
     }
     
     @Listener
-    public void onEntityDamageByEntityEvent(DamageEntityEvent e, @First Entity e1) {
-    	Player p = null;       
-    	
-        Entity e2 = e.getTargetEntity();
-        
-    	RedProtect.logger.debug("player","RPLayerListener: Is EntityDamageByEntityEvent event"); 
-    	
-        if (e2 instanceof Player){
-        	p = (Player)e2;
-        } else if (e2 instanceof Projectile){
-        	Projectile proj = (Projectile)e2;
-        	if (proj.getShooter() instanceof Player){
-        		p = (Player) proj.getShooter();
-        	}        	
-        } 
-        
-        if (p != null){
-        	RedProtect.logger.debug("player","Player: " + p.getName()); 
-        } else {
-        	RedProtect.logger.debug("player","Player: is null"); 
-        }
-        
-        RedProtect.logger.debug("player","Damager: " + e2.getType().getName()); 
-        
+    public void onEntityDamageByEntityEvent(InteractEntityEvent.Primary e, @First Player p) {
+        Entity e1 = e.getTargetEntity();        
+        RedProtect.logger.debug("player","RPLayerListener: Is EntityDamageByEntityEvent event. Victim: "+e.getTargetEntity().getType().getName()); 
+                        
         Location<World> l = e1.getLocation();
         Region r = RedProtect.rm.getTopRegion(l);
         if (r == null || p == null){
         	return;
         }
         
-        if (RedProtect.tpWait.contains(p.getName())){
-    		RedProtect.tpWait.remove(p.getName());
-    		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
-    	}
-        
-        if (e1.getType().equals(EntityTypes.PLAYER) && r.flagExists("pvp") && !r.canPVP(p)){
+        if (e1 instanceof Player && r.flagExists("pvp") && !r.canPVP(p)){
         	RPLang.sendMessage(p, "entitylistener.region.cantpvp");
             e.setCancelled(true);
-        }
-        
-        if (e1 instanceof Hanging && !r.canBuild(p)){
-        	RPLang.sendMessage(p, "playerlistener.region.cantremove");
-        	e.setCancelled(true);
-        }   
-
-        if ((e1.getType().getName().contains("minecart") || e1.getType().getName().contains("boat")) && !r.canMinecart(p)){
-        	RPLang.sendMessage(p, "blocklistener.region.cantbreak");
-        	e.setCancelled(true);
-        }	
+            return;
+        }        
 	}
-
-
+    
     @Listener
     public void onPlayerMovement(DisplaceEntityEvent.Move e){
     	if (!(e.getTargetEntity() instanceof Player) || RedProtect.cfgs.getBool("performance.disable-onPlayerMoveEvent-handler")) {
@@ -760,6 +769,7 @@ public class RPPlayerListener{
     
     @Listener
     public void onPlayerDie(DestructEntityEvent.Death e){
+    	RedProtect.logger.debug("player","RPLayerListener: Is DestructEntityEvent.Death"); 
     	if (!(e.getTargetEntity() instanceof Player)){
     		return;
     	}
