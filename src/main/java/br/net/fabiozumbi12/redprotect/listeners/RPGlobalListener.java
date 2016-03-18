@@ -361,7 +361,9 @@ public class RPGlobalListener{
                     return;
                 }
             }
-            RedProtect.logger.debug("spawn","RPGlobalListener - Spawn mob " + e.getType().getName());
+            if (e.getType() != null){
+                RedProtect.logger.debug("spawn","RPGlobalListener - Spawn mob " + e.getType().getName());
+            }
         } 
         
     }
