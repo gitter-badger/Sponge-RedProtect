@@ -3,9 +3,7 @@ package br.net.fabiozumbi12.redprotect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.service.permission.SubjectData;
 
 public class RPPermissionHandler{
 	
@@ -33,14 +31,14 @@ public class RPPermissionHandler{
     	int limit = RedProtect.cfgs.getInt("region-settings.limit-amount");
     	List<Integer> limits = new ArrayList<Integer>();    	
     	if (limit > 0){
-    		if (!p.hasPermission("redprotect.limit.blocks.unlimited")){
-    			Map<String, Boolean> perms = p.getTransientSubjectData().getPermissions(SubjectData.GLOBAL_CONTEXT);
-    			for (String perm:perms.keySet()){
-    				RedProtect.logger.severe("block perm: "+perm);
-        			if (perm.startsWith("redprotect.limit.blocks.") && perms.get(perm)){
-        				limits.add(Integer.parseInt(perm.replaceAll("[^-?0-9]+", "")));    				
-        			}  
-        		}
+    		if (!p.hasPermission("redprotect.limit.blocks.unlimited")){    			
+    			for (String perm:RedProtect.cfgs.getStringList("permissions-limits.permissions.blocks")){
+    				RedProtect.logger.debug("default","Perm: "+perm);
+    				if (p.hasPermission(perm)){
+    					RedProtect.logger.debug("default","Has block perm: "+perm);
+    					limits.add(Integer.parseInt(perm.replaceAll("[^-?0-9]+", ""))); 
+    				}
+    			}
     		} else {
     			return -1;
     		}
@@ -56,13 +54,13 @@ public class RPPermissionHandler{
     	List<Integer> limits = new ArrayList<Integer>();
     	if (limit > 0){
     		if (!p.hasPermission("redprotect.limit.claim.unlimited")){
-    			Map<String, Boolean> perms = p.getTransientSubjectData().getPermissions(SubjectData.GLOBAL_CONTEXT);
-    			for (String perm:perms.keySet()){
-    				RedProtect.logger.severe("claim perm: "+perm);
-        			if (perm.startsWith("redprotect.limit.claim.") && perms.get(perm)){
-        				limits.add(Integer.parseInt(perm.replaceAll("[^-?0-9]+", "")));    				
-        			}  
-        		}
+    			for (String perm:RedProtect.cfgs.getStringList("permissions-limits.permissions.claims")){
+    				RedProtect.logger.severe("Perm: "+perm);
+    				if (p.hasPermission(perm)){
+    					RedProtect.logger.debug("default","Has claim perm: "+perm);
+    					limits.add(Integer.parseInt(perm.replaceAll("[^-?0-9]+", ""))); 
+    				}
+    			}
     		} else {
     			return -1;
     		}  		

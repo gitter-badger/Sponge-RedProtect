@@ -15,16 +15,30 @@
         <snapshots>
             <enabled>true</enabled>
         </snapshots>
-    </repository>    
+    </repository>  
+    
+    <repository>
+            <id>libs-repo</id>
+            <url>http://areaz12server.net.br/maven/</url>
+    </repository>
+       
   </repositories>
 
   <dependencies>  
+  
     <dependency>
         <groupId>org.spongepowered</groupId>
         <artifactId>spongeapi</artifactId>
         <version>LATEST</version>
         <scope>provided</scope>
     </dependency>      
+    
+    <dependency>
+		<groupId>repo.sponge</groupId>
+		<artifactId>PermissionsEx</artifactId>
+		<version>v1</version>
+	</dependency>
+		
   </dependencies>
   
   <build>

@@ -128,7 +128,7 @@ public class RedProtect {
         serv = Sponge.getServer();        
         cmdService = game.getCommandManager();
         cfgs = new RPConfig(serv);
-        RPLang.init(this);
+        RPLang.init();
         
         ph = new RPPermissionHandler();
         rm = new RegionManager();

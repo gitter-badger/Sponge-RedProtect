@@ -26,8 +26,7 @@ public class RPLang {
 	static HashMap<String, String> Lang = new HashMap<String, String>();
     static String pathLang;
     static File langFile;
-    static String resLang; 
-    static RedProtect plugin;
+    static String resLang;
 	
 	static SortedSet<String> helpStrings(){
 		SortedSet<String> values = new TreeSet<String>();
@@ -39,8 +38,7 @@ public class RPLang {
 		return values;
 	}
 	
-	static void init(RedProtect plugin) {
-		RPLang.plugin = plugin;
+	static void init() {
 		pathLang = RedProtect.configDir + "lang" + RedProtect.cfgs.getString("language") + ".ini"; 
 		langFile = new File(pathLang);
 		resLang = "lang" + RedProtect.cfgs.getString("language") + ".ini";

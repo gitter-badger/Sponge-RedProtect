@@ -49,75 +49,8 @@ public class RPCommands implements CommandCallable {
         RPLang.sendMessage(p, "no.permission");
     }
     
-    /*
-    @Override
-    public List onTabComplete(CommandSource e, String args) throws CommandException {
-    	//List<String> SotTab = new ArrayList<String>();    
-    	//SortedSet<String> tab = new TreeSet<String>();  
-    	
-    	if (e.getCause().containsType(Player.class)) {
-    		Player p = e.getCause().first(Player.class).get();
-    		List<String> cmds = Arrays.asList("border", "expand-vert", "setminy", "setmaxy", "value", "buy", "sell", "cancelbuy", "tutorial", "limit", "claimlimit", "list", "delete", "info", "flag", "addmember", "addowner", "removemember", "removeowner", "rename", "welcome", "priority", "near", "panel");
-    		List<String> admcmds = Arrays.asList("wand", "tp", "claim", "define", "redefine", "setconfig", "reload", "copyflag", "setcreator", "save-all", "reload-all");
-    		
-    		String[] args = e.getArguments().split(" ");
-    		
-    		if (args.length == 1){
-    			for (String command:cmds){
-    				if (p.hasPermission("redprotect.user") && command.startsWith(args[0]) && !tab.contains(command)){
-    					tab.add(command);
-    					
-    				}
-    			}
-    			for (String command:admcmds){
-    				if (p.hasPermission("redprotect.admin") && command.startsWith(args[0]) && !tab.contains(command)){
-    					tab.add(command);
-    				}
-    			}
-    			SotTab.addAll(tab);
-    			return SotTab;
-    		}
-    		if (args.length == 2){
-        		if (args[0].equalsIgnoreCase("flag")){
-        			for (String flag:RedProtect.cfgs.getDefFlags()){
-        				if (flag.startsWith(args[1]) && p.hasPermission("redprotect.flag."+ flag) && !tab.contains(flag)){
-        					tab.add(flag);
-        				}
-        			} 
-        			for (String flag:RedProtect.cfgs.AdminFlags){
-        				if (flag.startsWith(args[1]) && p.hasPermission("redprotect.admin.flag."+ flag) && !tab.contains(flag)){
-        					tab.add(flag);
-        				}
-        			}
-        			SotTab.addAll(tab);
-        			return SotTab;
-        		}
-        	}
-    	} else if (e.getCause().containsType(Player.class)){
-    		return;
-    	}
-    	   	
-    	
-    	if (sender instanceof Player){
-    		
-    	} else {
-    		List<String> consolecmds = Arrays.asList("setconfig", "flag", "tp", "ymlTomysql", "setconfig", "reload", "save-all", "reload-all", "limit", "claimlimit", "list-all");
-    		for (String command:consolecmds){
-				if (command.startsWith(args[0])){
-					tab.add(command);
-				}
-			}
-    		SotTab.addAll(tab);
-			return SotTab;
-    	}
-		return null;    	
-    }
-    */
-    
     public CommandResult process(CommandSource sender, String arguments) throws CommandException {
     	CommandResult cmdr = CommandResult.success();
-    	
-    	
     	
 		String[] args = arguments.split(" ");
 				
@@ -207,14 +140,14 @@ public class RPCommands implements CommandCallable {
             		return cmdr;
             	}
         		
-        		/*
+        		
         		if (args[0].equalsIgnoreCase("reload")) {
-        			RedProtect.plugin.getServer().getPluginManager().disablePlugin((Plugin)RedProtect.plugin);
-        			RedProtect.plugin.getServer().getPluginManager().enablePlugin((Plugin)RedProtect.plugin);
-            		RedProtect.logger.sucess("RedProtect Plus reloaded!");
+        			RedProtect.cfgs = new RPConfig(RedProtect.serv);
+        			RPLang.init();
+            		RedProtect.logger.sucess("RedProtect reloaded config and language!");
             		return cmdr;
             	}   
-            	*/       		
+            	     		
         	} 
         	
         	if(args.length == 2){
@@ -608,14 +541,14 @@ public class RPCommands implements CommandCallable {
                 }
                 return cmdr;
         	}
-        	/*
+        	
         	if (args[0].equalsIgnoreCase("reload") && player.hasPermission("redprotect.admin.reload")) {
-        		RedProtect.plugin.getServer().getPluginManager().disablePlugin((Plugin)RedProtect.plugin);
-    			RedProtect.plugin.getServer().getPluginManager().enablePlugin((Plugin)RedProtect.plugin);
+        		RedProtect.cfgs = new RPConfig(RedProtect.serv);
+    			RPLang.init();
         		RPLang.sendMessage(player, "cmdmanager.reloaded");
         		return cmdr;
         	}
-        	*/
+        	
         	if (args[0].equalsIgnoreCase("wand") && player.hasPermission("redprotect.magicwand")) {
         		Inventory inv = player.getInventory();
         		ItemType mat = RPUtil.getItemType(RedProtect.cfgs.getString("wands.adminWandID"));

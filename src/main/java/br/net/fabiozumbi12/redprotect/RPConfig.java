@@ -53,6 +53,44 @@ public class RPConfig{
 		return config;
 	}
 	
+	private CommentedConfigurationNode updateFromIn(CommentedConfigurationNode temp, CommentedConfigurationNode out){
+		for (Object key:temp.getChildrenMap().keySet()){          	
+        	if (temp.getNode(key).hasMapChildren()){        		
+        		for (Object key2:temp.getNode(key).getChildrenMap().keySet()){          			
+        			if (temp.getNode(key,key2).hasMapChildren()){		        				
+		        		for (Object key3:temp.getNode(key,key2).getChildrenMap().keySet()){  
+		        			out.getNode(key,key2,key3).setValue(temp.getNode(key,key2,key3).getValue());  
+		        			continue;
+		        		}				        		
+		        	}	        			
+        			out.getNode(key,key2).setValue(temp.getNode(key,key2).getValue());  
+        			continue;
+        		}
+        	}
+        	out.getNode(key).setValue(temp.getNode(key).getValue());    	            	   	            	
+        }
+		return out;
+	}
+	
+	private CommentedConfigurationNode updateFromOut(CommentedConfigurationNode temp, CommentedConfigurationNode out){
+		for (Object key:out.getChildrenMap().keySet()){          	
+        	if (out.getNode(key).hasMapChildren()){        		
+        		for (Object key2:out.getNode(key).getChildrenMap().keySet()){          			
+        			if (out.getNode(key,key2).hasMapChildren()){		        				
+		        		for (Object key3:out.getNode(key,key2).getChildrenMap().keySet()){  
+		        			out.getNode(key,key2,key3).setValue(temp.getNode(key,key2,key3).getValue(out.getNode(key,key2,key3).getValue()));  
+		        			continue;
+		        		}				        		
+		        	}	        			
+        			out.getNode(key,key2).setValue(temp.getNode(key,key2).getValue(out.getNode(key,key2).getValue()));  
+        			continue;
+        		}
+        	}
+        	out.getNode(key).setValue(temp.getNode(key).getValue(out.getNode(key).getValue()));    	            	   	            	
+        }
+		return out;
+	}
+	
 	//init
 	RPConfig(Server server) {		
 		try {			
@@ -112,18 +150,17 @@ public class RPConfig{
 				
     	            //------------------------------ Add default Values ----------------------------//
 		        
-		        for (Object key:tempConfig.getChildrenMap().keySet()){                        	
-	            	config.getNode(key).setValue(tempConfig.getNode(key).getValue());    	            	   	            	
-	            }                        
+		        config = updateFromIn(tempConfig, config); 
+		        		        
 		        try {
+		        	configManager = HoconConfigurationLoader.builder().setPath(defConfig.toPath()).build();
 					tempConfig = configManager.load();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-                for (Object key:config.getChildrenMap().keySet()){    
-                	config.getNode(key).setValue(tempConfig.getNode(key).getValue());
-                }
-                
+
+		        config = updateFromOut(tempConfig, config); 
+		                        
 		        /*
     	            if (!temp.contains("config-version")){
     	            	RedProtect.logger.severe("Old config file detected and copied to 'configBKP.yml'. Remember to check your old config file and set the new as you want!");
@@ -151,20 +188,6 @@ public class RPConfig{
                     */
 				
                     RedProtect.logger.info("Server version: " + RedProtect.game.getPlatform().getMinecraftVersion());
-                    
-                    // check if can enable json support
-                    if (getBool("region-settings.region-list.hover-and-click-teleport")){                    	
-                    	try {
-                    		Class.forName("com.google.gson.JsonParser");
-                          	if (RedProtect.game.getPlatform().getMinecraftVersion().getName().contains("1.7")){
-                          		getNodes("region-settings.region-list.hover-and-click-teleport").setValue(false);
-                          		RedProtect.logger.warning("Your server version do not support Hover and Clicking region features, only 1.8.+");
-                          	}                           	
-                       	} catch(ClassNotFoundException e ) {
-                       		getNodes("region-settings.region-list.hover-and-click-teleport").setValue(false);
-                       		RedProtect.logger.warning("Your server version do not support JSON events, disabling Hover and Clicking region features.");
-                       	}
-                    }                    
                     
                     /*Disabled dua dont have a getop method on API
                     //add op to ignore list fro purge
@@ -206,7 +229,7 @@ public class RPConfig{
     	                	            
     	            //add allowed claim worlds to config
     	            try {
-						if (getNodes("allowed-claim-worlds").getList(TypeToken.of(String.class)).size() == 1) {
+						if (getNodes("allowed-claim-worlds").getList(TypeToken.of(String.class)).isEmpty()) {
 							List<String> worlds = new ArrayList<String>();
 							for (World w:RedProtect.serv.getWorlds()){
 								worlds.add(w.getName());
