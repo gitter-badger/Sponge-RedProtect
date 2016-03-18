@@ -31,6 +31,7 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.UseItemStackEvent;
+import org.spongepowered.api.event.world.ChangeWorldWeatherEvent;
 import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.ItemTypes;
@@ -38,6 +39,8 @@ import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.weather.Weathers;
+
 import br.net.fabiozumbi12.redprotect.RedProtect;
 import br.net.fabiozumbi12.redprotect.Region;
 
@@ -77,6 +80,13 @@ public class RPGlobalListener{
 				return;
 			}
 		}		
+	}
+	
+	@Listener	
+	public void onChangeWeather(ChangeWorldWeatherEvent e) {
+		if (!RedProtect.cfgs.getGlobalFlag(e.getTargetWorld().getName(),"allow-weather") && !e.getWeather().equals(Weathers.CLEAR)){
+			e.setCancelled(true);
+		}
 	}
 	
 	@Listener	

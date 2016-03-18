@@ -34,8 +34,9 @@ public class RPPermissionHandler{
     	List<Integer> limits = new ArrayList<Integer>();    	
     	if (limit > 0){
     		if (!p.hasPermission("redprotect.limit.blocks.unlimited")){
-    			Map<String, Boolean> perms = p.getSubjectData().getPermissions(SubjectData.GLOBAL_CONTEXT);
+    			Map<String, Boolean> perms = p.getTransientSubjectData().getPermissions(SubjectData.GLOBAL_CONTEXT);
     			for (String perm:perms.keySet()){
+    				RedProtect.logger.severe("block perm: "+perm);
         			if (perm.startsWith("redprotect.limit.blocks.") && perms.get(perm)){
         				limits.add(Integer.parseInt(perm.replaceAll("[^-?0-9]+", "")));    				
         			}  
@@ -55,8 +56,9 @@ public class RPPermissionHandler{
     	List<Integer> limits = new ArrayList<Integer>();
     	if (limit > 0){
     		if (!p.hasPermission("redprotect.limit.claim.unlimited")){
-    			Map<String, Boolean> perms = p.getSubjectData().getPermissions(SubjectData.GLOBAL_CONTEXT);
+    			Map<String, Boolean> perms = p.getTransientSubjectData().getPermissions(SubjectData.GLOBAL_CONTEXT);
     			for (String perm:perms.keySet()){
+    				RedProtect.logger.severe("claim perm: "+perm);
         			if (perm.startsWith("redprotect.limit.claim.") && perms.get(perm)){
         				limits.add(Integer.parseInt(perm.replaceAll("[^-?0-9]+", "")));    				
         			}  
