@@ -23,4 +23,4 @@ build:
     - script:
         name: Download SNAPSHOT
         code: |
-          cp -r $WERCKER_SOURCE_DIR/src/main/java/br/net/fabiozumbi12/redprotect*.jar $WERCKER_REPORT_ARTIFACTS_DIR
+          cp -r $WERCKER_SOURCE_DIR/src/main/java/br/net/fabiozumbi12/redprotect/*.jar $WERCKER_REPORT_ARTIFACTS_DIR
