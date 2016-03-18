@@ -54,7 +54,7 @@
             <goal>copy-resources</goal>
           </goals>
           <configuration>          
-          <outputDirectory>${project.basedir}/release</outputDirectory>
+          <outputDirectory>${project.basedir}/src/main/java/br/net/fabiozumbi12/redprotect</outputDirectory>
           <resources>
             <resource>
               <directory>target/</directory>
