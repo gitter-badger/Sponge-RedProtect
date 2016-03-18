@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
+import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.BlockTypes;
@@ -1989,12 +1990,23 @@ public class RPCommands implements CommandCallable {
 		
 	}
 
+	private static <T extends CatalogType> boolean testRegistry(Class<T> class1, String value){
+		try {
+			Sponge.getRegistry().getType(class1, value);	
+			return true;
+		} catch(Exception e) {
+			return false;			
+		}
+	}
+	
 	private static boolean validate(String flag, Object value) {
 		if (flag.equalsIgnoreCase("gamemode")){
 			if (!(value instanceof String)){
 				return false;
 			}
-			return Sponge.getRegistry().getType(GameMode.class, value.toString().toUpperCase()).isPresent();			
+			if (!testRegistry(GameMode.class, value.toString())){
+				return false;
+			}
 		}
 		
 		if ((flag.equalsIgnoreCase("can-fly") || 
@@ -2019,9 +2031,9 @@ public class RPCommands implements CommandCallable {
 		if (flag.equalsIgnoreCase("allow-enter-items") || flag.equalsIgnoreCase("deny-enter-items") || flag.equalsIgnoreCase("allow-place") || flag.equalsIgnoreCase("allow-break")){
 			String[] valida = ((String)value).replace(" ", "").split(",");
 			for (String item:valida){
-				if (!Sponge.getGame().getRegistry().getType(ItemType.class, item).isPresent()){
+				if (!testRegistry(ItemType.class, item)){
 					return false;
-				}
+				}				
 			}
 		}
 		if (flag.equalsIgnoreCase("allow-cmds") || flag.equalsIgnoreCase("deny-cmds")){
@@ -2044,8 +2056,8 @@ public class RPCommands implements CommandCallable {
 				String[] effect = eff.split(" ");
 				if (effect.length < 2){
 					return false;
-				}
-				if (!Sponge.getGame().getRegistry().getType(PotionEffectType.class, effect[0]).isPresent()){
+				}				
+				if (!testRegistry(PotionEffectType.class, effect[0])){
 					return false;
 				}
 				try {

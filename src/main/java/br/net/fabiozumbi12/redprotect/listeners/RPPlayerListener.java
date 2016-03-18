@@ -15,12 +15,11 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.potion.PotionEffect;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.hanging.Hanging;
-import org.spongepowered.api.entity.living.ArmorStand;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
-import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
 import org.spongepowered.api.entity.projectile.Projectile;
 import org.spongepowered.api.entity.projectile.ThrownPotion;
@@ -107,6 +106,8 @@ public class RPPlayerListener{
         BlockSnapshot b = event.getTargetBlock();
         Location<World> l = null;
         
+        RedProtect.logger.debug("player","RPPlayerListener - Is InteractBlockEvent.Primary event");
+        
         if (!b.getState().getType().equals(BlockTypes.AIR)){
         	l = b.getLocation().get();
         	RedProtect.logger.debug("player","RPPlayerListener - Is InteractBlockEvent.Primary event. The block is " + b.getState().getType().getName());
@@ -133,6 +134,8 @@ public class RPPlayerListener{
     	
         BlockSnapshot b = event.getTargetBlock();
         Location<World> l = null;
+        
+        RedProtect.logger.debug("player","RPPlayerListener - Is InteractBlockEvent.Secondary event");
         
         if (!b.getState().getType().equals(BlockTypes.AIR)){
         	l = b.getLocation().get();
@@ -404,7 +407,7 @@ public class RPPlayerListener{
     		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
     	}
                 
-        if (ent instanceof Hanging || ent instanceof ArmorStand) {        	
+        if (ent instanceof Hanging || ent.getType().equals(EntityTypes.ARMOR_STAND)) {        	
             if (!r.canBuild(p)) {
                 RPLang.sendMessage(p, "playerlistener.region.cantedit");
                 e.setCancelled(true);
@@ -528,7 +531,10 @@ public class RPPlayerListener{
     		RedProtect.tpWait.remove(p.getName());
     		RPLang.sendMessage(p, "cmdmanager.region.tpcancelled");
     	}
-    	    	    	
+    	 
+    	Transform<World> lfromForm = e.getFromTransform();
+    	Transform<World> ltoForm = e.getToTransform();
+    	
     	Location<World> lfrom = e.getFromTransform().getLocation();
     	Location<World> lto = e.getToTransform().getLocation();
     	
@@ -559,19 +565,19 @@ public class RPPlayerListener{
     		
             //Enter flag
             if (!r.canEnter(p)){
-        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
+        		e.setToTransform(DenyEnterPlayer(w, lfromForm, ltoForm, p, r));
         		RPLang.sendMessage(p, "playerlistener.region.cantregionenter");			
         	}
             
             //Allow enter with items
             if (!r.canEnterWithItens(p)){
-        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
+        		e.setToTransform(DenyEnterPlayer(w, lfromForm, ltoForm, p, r));
         		RPLang.sendMessage(p, RPLang.get("playerlistener.region.onlyenter.withitems").replace("{items}", r.flags.get("allow-enter-items").toString()));			
         	}
             
             //Deny enter with item
             if (!r.denyEnterWithItens(p)){
-        		e.setToTransform(new Transform<World>(DenyEnterPlayer(w, lfrom, lto, p, r)));
+        		e.setToTransform(DenyEnterPlayer(w, lfromForm, ltoForm, p, r));
         		RPLang.sendMessage(p, RPLang.get("playerlistener.region.denyenter.withitems").replace("{items}", r.flags.get("deny-enter-items").toString()));			
         	}
             
@@ -782,41 +788,42 @@ public class RPPlayerListener{
     	}
     }
         
-    private Location<World> DenyEnterPlayer(World wFrom, Location<World> from, Location<World> to, Player p, Region r) {
-    	Location<World> setTo = to;
+    private Transform<World> DenyEnterPlayer(World wFrom, Transform<World> from, Transform<World> to, Player p, Region r) {
+    	Location<World> setFrom = from.getLocation();
+    	Location<World> setTo = to.getLocation();
     	for (int i = 0; i < r.getArea()+10; i++){
-    		Region r1 = RedProtect.rm.getTopRegion(wFrom, from.getBlockX()+i, from.getBlockY(), from.getBlockZ());
-    		Region r2 = RedProtect.rm.getTopRegion(wFrom, from.getBlockX()-i, from.getBlockY(), from.getBlockZ());
-    		Region r3 = RedProtect.rm.getTopRegion(wFrom, from.getBlockX(), from.getBlockY(), from.getBlockZ()+i);
-    		Region r4 = RedProtect.rm.getTopRegion(wFrom, from.getBlockX(), from.getBlockY(), from.getBlockZ()-i);
-    		Region r5 = RedProtect.rm.getTopRegion(wFrom, from.getBlockX()+i, from.getBlockY(), from.getBlockZ()+i);
-    		Region r6 = RedProtect.rm.getTopRegion(wFrom, from.getBlockX()-i, from.getBlockY(), from.getBlockZ()-i);
+    		Region r1 = RedProtect.rm.getTopRegion(wFrom, setFrom.getBlockX()+i, setFrom.getBlockY(), setFrom.getBlockZ());
+    		Region r2 = RedProtect.rm.getTopRegion(wFrom, setFrom.getBlockX()-i, setFrom.getBlockY(), setFrom.getBlockZ());
+    		Region r3 = RedProtect.rm.getTopRegion(wFrom, setFrom.getBlockX(), setFrom.getBlockY(), setFrom.getBlockZ()+i);
+    		Region r4 = RedProtect.rm.getTopRegion(wFrom, setFrom.getBlockX(), setFrom.getBlockY(), setFrom.getBlockZ()-i);
+    		Region r5 = RedProtect.rm.getTopRegion(wFrom, setFrom.getBlockX()+i, setFrom.getBlockY(), setFrom.getBlockZ()+i);
+    		Region r6 = RedProtect.rm.getTopRegion(wFrom, setFrom.getBlockX()-i, setFrom.getBlockY(), setFrom.getBlockZ()-i);
     		if (r1 != r){
-    			setTo = from.add(+i, 0, 0);
+    			setTo = setFrom.add(+i, 0, 0);
     			break;
     		} 
     		if (r2 != r){
-    			setTo = from.add(-i, 0, 0);
+    			setTo = setFrom.add(-i, 0, 0);
     			break;
     		} 
     		if (r3 != r){
-    			setTo = from.add(0, 0, +i);
+    			setTo = setFrom.add(0, 0, +i);
     			break;
     		} 
     		if (r4 != r){
-    			setTo = from.add(0, 0, -i);
+    			setTo = setFrom.add(0, 0, -i);
     			break;
     		} 
     		if (r5 != r){
-    			setTo = from.add(+i, 0, +i);
+    			setTo = setFrom.add(+i, 0, +i);
     			break;
     		} 
     		if (r6 != r){
-    			setTo = from.add(-i, 0, -i);
+    			setTo = setFrom.add(-i, 0, -i);
     			break;
     		} 
 		}
-    	return setTo;
+    	return new Transform<World>(setTo).setRotation(to.getRotation());
 	}
     
     @Listener
@@ -944,6 +951,10 @@ public class RPPlayerListener{
     		return;
     	}
     	
+    	if (r.flagExists("enter") && !r.canEnter(p)){
+    		return;
+    	}
+    	
     	String ownerstring = "";
     	String m = "";
     	//Enter-Exit notifications    
@@ -973,14 +984,13 @@ public class RPPlayerListener{
     private void RegionFlags(final Region r, Region er, final Player p){  
     	
     	//enter Gamemode flag
-    	if (r.flagExists("gamemode")){
-    		Sponge.getGame().getRegistry().getType(GameMode.class, r.getFlagString("gamemode"));
-    		p.gameMode().set(RPUtil.getGameMode(r.getFlagString("gamemode").toUpperCase()));
+    	if (r.flagExists("gamemode") && !p.hasPermission("redprotect.admin.flag.gamemode")){    		
+    		p.offer(Keys.GAME_MODE, RPUtil.getGameMode(r.getFlagString("gamemode")));
     	}
     	
     	//Exit gamemode
 		if (er != null && er.flagExists("gamemode") && !p.hasPermission("redprotect.admin.flag.gamemode")){
-			p.gameMode().set(p.getWorld().getProperties().getGameMode());
+			p.offer(Keys.GAME_MODE, p.getWorld().getProperties().getGameMode());
 		}
 		
 		//Enter command as player
@@ -1151,7 +1161,7 @@ public class RPPlayerListener{
     		        	
     		//Exit gamemode
     		if (er.flagExists("gamemode") && !p.hasPermission("redprotect.admin.flag.gamemode")){
-    			p.gameMode().set(p.getWorld().getProperties().getGameMode());
+    			p.offer(Keys.GAME_MODE, p.getWorld().getProperties().getGameMode());
     		}
     		
 			//Exit effect

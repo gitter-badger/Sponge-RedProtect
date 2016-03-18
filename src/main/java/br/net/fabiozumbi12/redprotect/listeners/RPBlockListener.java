@@ -19,6 +19,7 @@ import org.spongepowered.api.entity.weather.Lightning;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.action.LightningEvent;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
+import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.tileentity.ChangeSignEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
@@ -441,6 +442,40 @@ public class RPBlockListener{
 		}
 	}
 	
+    @Listener
+    public void onInteractBlock(InteractBlockEvent event, @First Player p) {
+    	BlockSnapshot b = event.getTargetBlock();
+        Location<World> l = null;
+        
+        RedProtect.logger.debug("player","RPBlockListener - Is InteractBlockEvent.Secondary event");
+        
+        if (!b.getState().getType().equals(BlockTypes.AIR)){
+        	l = b.getLocation().get();
+        	RedProtect.logger.debug("player","RPBlockListener - Is InteractBlockEvent.Secondary event. The block is " + b.getState().getType().getName());
+        } else {
+        	l = p.getLocation();
+        }
+        
+        Region r = RedProtect.rm.getTopRegion(l);
+        ItemType itemInHand = ItemTypes.NONE;
+        if (p.getItemInHand().isPresent()){
+        	itemInHand = p.getItemInHand().get().getItem();
+        }        
+        if (itemInHand.equals(ItemTypes.ARMOR_STAND) && !r.canBuild(p)){
+			RPLang.sendMessage(p, "blocklistener.region.cantbuild");
+            event.setCancelled(true); 
+		}
+    }
+    
+    //TODO Test events
+    /*
+    @Listener
+    public void onListenEvent(TargetLivingEvent event) {    	
+    	RedProtect.logger.severe("Event: "+ event.toString());
+    }
+    
+    */
+    
 	/*
 	@Listener
 	public void onVehicleBreak(DamageEntityEvent e){

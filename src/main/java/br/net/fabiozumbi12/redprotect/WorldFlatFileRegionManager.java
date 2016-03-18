@@ -181,13 +181,14 @@ class WorldFlatFileRegionManager implements WorldRegionManager{
     @Override
     public void load() {   
     	try {
-            String world = this.getWorld().getName();
+            String world = this.getWorld().getName();            
             if (RedProtect.cfgs.getString("file-type").equals("file")) {        	
             	File oldf = new File(RedProtect.configDir+"data"+File.separator+world + ".conf");
             	File newf = new File(RedProtect.configDir+"data"+File.separator+"data_" + world + ".conf");
                 if (oldf.exists()){
                 	oldf.renameTo(newf);
-                }            
+                } 
+                
                 this.load(RedProtect.configDir+"data"+File.separator+"data_" + world + ".conf");        	
             }
 			} catch (FileNotFoundException | ClassNotFoundException e) {

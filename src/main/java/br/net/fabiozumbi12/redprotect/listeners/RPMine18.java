@@ -6,12 +6,7 @@ import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.ArmorStand;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.entity.projectile.Arrow;
-import org.spongepowered.api.entity.projectile.Egg;
-import org.spongepowered.api.entity.projectile.FishHook;
-import org.spongepowered.api.entity.projectile.Snowball;
-import org.spongepowered.api.entity.projectile.explosive.fireball.Fireball;
-import org.spongepowered.api.entity.projectile.explosive.fireball.SmallFireball;
+import org.spongepowered.api.entity.projectile.Projectile;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.InteractEntityEvent;
@@ -60,6 +55,7 @@ public class RPMine18 {
         	}    	
     	}
         
+        //TODO Not working!
         if (ent.getType().equals(EntityTypes.ARMOR_STAND)) {
             if (r != null && !r.canBuild(p)) {
                 if (!RedProtect.ph.hasPerm(p, "redprotect.bypass")) {
@@ -77,48 +73,16 @@ public class RPMine18 {
         Entity e1 = e.getTargetEntity();
         Location<World> loc = e1.getLocation();
         
-        Player p = null;        
-        if (e2 instanceof Player){
-        	p = (Player)e2;
-        } else if (e2 instanceof Arrow){
-        	Arrow proj = (Arrow)e2;
-        	if (proj.getShooter() instanceof Player){
-        		p = (Player) proj.getShooter();
-        	}        	
-        } else if (e2 instanceof FishHook){
-        	FishHook fish = (FishHook)e2;
-        	if (fish.getShooter() instanceof Player){
-        		p = (Player) fish.getShooter();
-        	} 
-        } else if (e2 instanceof Egg){
-        	Egg Egg = (Egg)e2;
-        	if (Egg.getShooter() instanceof Player){
-        		p = (Player) Egg.getShooter();
-        	} 
-        } else if (e2 instanceof Snowball){
-        	Snowball Snowball = (Snowball)e2;
-        	if (Snowball.getShooter() instanceof Player){
-        		p = (Player) Snowball.getShooter();
-        	} 
-        } else if (e2 instanceof Fireball){
-        	Fireball Fireball = (Fireball)e2;
-        	if (Fireball.getShooter() instanceof Player){
-        		p = (Player) Fireball.getShooter();
-        	} 
-        } else if (e2 instanceof SmallFireball){
-        	SmallFireball SmallFireball = (SmallFireball)e2;
-        	if (SmallFireball.getShooter() instanceof Player){
-        		p = (Player) SmallFireball.getShooter();
-        	} 
-        } else {
-        	e.isCancelled();
-        	return;
-        }         
-
-        if (p == null){
-        	return;
-        }
-        
+        Player damager = null;
+    	if (e2 instanceof Projectile){
+    		Projectile proj = (Projectile)e2;
+    		if (proj.getShooter() instanceof Player){
+    			damager = (Player) proj.getShooter();
+    		}
+    	} else if (e2 instanceof Player){
+    		damager = (Player) e2;
+    	}       
+    	
 		Region r1 = RedProtect.rm.getTopRegion(loc);
 		
 		if (r1 == null){
@@ -135,9 +99,9 @@ public class RPMine18 {
 		} 
 		
 		if (e1 instanceof ArmorStand){
-        	if (r1 != null && !r1.canBuild(p)){
+        	if (r1 != null && !r1.canBuild(damager)){
             	e.setCancelled(true);
-            	RPLang.sendMessage(p, "blocklistener.region.cantbreak");
+            	RPLang.sendMessage(damager, "blocklistener.region.cantbreak");
             	return;
             }                                  
         }        

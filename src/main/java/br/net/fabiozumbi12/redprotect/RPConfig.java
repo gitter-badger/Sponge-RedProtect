@@ -59,6 +59,9 @@ public class RPConfig{
 			if (!new File(RedProtect.configDir).exists()){
 				new File(RedProtect.configDir).mkdir();
 			}
+			if (!new File(RedProtect.configDir+"data").exists()){
+            	new File(RedProtect.configDir+"data").mkdir();
+            } 
 			
 			if (!defConfig.exists()) {
 		         defConfig.createNewFile();
@@ -78,15 +81,7 @@ public class RPConfig{
 		 	 
 		 	if (!gFlagsConfig.exists()) {
 		 		gFlagsConfig.createNewFile();
-		 		gFlagsManager = HoconConfigurationLoader.builder().setURL(this.getClass().getResource("globalflags.conf")).build();
-				gflags = gFlagsManager.load();
-				gFlagsManager = HoconConfigurationLoader.builder().setFile(gFlagsConfig).build();
-				gFlagsManager.save(gflags);
-		     }
-		 	
-		 	if (!new File(RedProtect.configDir+"data").exists()){
-        		new File(RedProtect.configDir+"data").mkdir();
-        	}
+		     }		 	
 		 	 
 		} catch (IOException e1) {			
 			RedProtect.logger.severe("The default configuration could not be loaded or created!");
@@ -254,9 +249,9 @@ public class RPConfig{
         			
         			/*---------------------------------------- Global Flags for worlds loaded --------------------------------------------*/
         			
-        			/*for (World w:server.getWorlds()){
+        			for (World w:server.getWorlds()){
         				this.loadPerWorlds(w);
-        			}*/
+        			}
                     
                     /*------------------------------------------ Gui Items ------------------------------------------*/
                     
@@ -334,7 +329,7 @@ public class RPConfig{
 		}
 		
 		try {
-			RedProtect.logger.debug("default","Writing global flags for world "+ w.getName() + "...");
+			//RedProtect.logger.debug("default","Writing global flags for world "+ w.getName() + "...");
         	gflags.getNode(w.getName(),"build").setValue(gflags.getNode(w.getName(),"build").getBoolean(true));
         	gflags.getNode(w.getName(),"if-build-false","break-blocks").setValue(gflags.getNode(w.getName(),"if-build-false","break-blocks").getList(TypeToken.of(String.class)));
         	gflags.getNode(w.getName(),"if-build-false","place-blocks").setValue(gflags.getNode(w.getName(),"if-build-false","place-blocks").getList(TypeToken.of(String.class)));
