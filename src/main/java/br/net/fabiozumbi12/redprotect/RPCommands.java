@@ -554,16 +554,17 @@ public class RPCommands implements CommandCallable {
         		ItemType mat = RPUtil.getItemType(RedProtect.cfgs.getString("wands.adminWandID"));
         		ItemStack item = ItemStack.of(mat, 1);
         		Iterable<Slot> slotIter = player.getInventory().slots();
-        		if (!inv.contains(mat)){
+        		if (inv.query(mat).isEmpty()){        			        			
         			for (Slot slot:slotIter) {
         			    if (slot.isEmpty()) {
         			        slot.set(item);
         			        RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.given").toString().replace("{item}", mat.getName()));
         			        break;
-        			   } 
+        			    }
         			}
-        		}        		
-                RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.nospace").toString().replace("{item}", mat.getName()));
+        		} else {
+        			RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.nospace").toString().replace("{item}", mat.getName()));
+        		}                
         		return cmdr;
         	}
         	
@@ -589,15 +590,14 @@ public class RPCommands implements CommandCallable {
                     }
                     else {
                         Iterator<Region> i = regions.iterator();
-                        RPLang.sendMessage(player,RPLang.get("general.color") + "------------------------------------");
-                        RPLang.sendMessage(player,RPLang.get("cmdmanager.regionwith40").toString());
-                        RPLang.sendMessage(player,RPLang.get("general.color") + "------------------------------------");
+                        player.sendMessage(RPUtil.toText(RPLang.get("cmdmanager.regionwith40")));
+                        player.sendMessage(RPUtil.toText(RPLang.get("general.color") + "------------------------------------"));
                         while (i.hasNext()) {
                             Region r = i.next();
-                            RPLang.sendMessage(player,RPLang.get("cmdmanager.region.name") + r.getName() + RPLang.get("general.color") + RPUtil.toText(" | Center (&6X,Z"+RPLang.get("general.color")+"): &6") +  r.getCenterX() + ", "  + r.getCenterZ());
-                            RPLang.sendMessage(player,RPLang.get("region.regions") + " " + regions.size());
+                            player.sendMessage(RPUtil.toText(RPLang.get("cmdmanager.region.name") + r.getName() + RPLang.get("general.color") + " | "+RPLang.get("region.center")+" (&6X,Z"+RPLang.get("general.color")+"): &6" +  r.getCenterX() + ", "  + r.getCenterZ()));
+                            player.sendMessage(RPUtil.toText(RPLang.get("region.regions") + " " + regions.size()));
                         }
-                        RPLang.sendMessage(player,RPLang.get("general.color") + "------------------------------------");
+                        player.sendMessage(RPUtil.toText(RPLang.get("general.color") + "------------------------------------"));
                     }
                 }
                 else {

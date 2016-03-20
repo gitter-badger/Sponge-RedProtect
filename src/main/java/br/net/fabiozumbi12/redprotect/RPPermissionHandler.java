@@ -31,7 +31,7 @@ public class RPPermissionHandler{
     	int limit = RedProtect.cfgs.getInt("region-settings.limit-amount");
     	List<Integer> limits = new ArrayList<Integer>();    	
     	if (limit > 0){
-    		if (!p.hasPermission("redprotect.limit.blocks.unlimited")){    			
+    		if (!p.hasPermission("redprotect.limit.blocks.unlimited")){
     			for (String perm:RedProtect.cfgs.getStringList("permissions-limits.permissions.blocks")){
     				RedProtect.logger.debug("default","Perm: "+perm);
     				if (p.hasPermission(perm)){

@@ -22,15 +22,9 @@ public abstract class RegionBuilder{
         return this.r;
     }
     
-    void setErrorSign(ChangeSignEvent e, Text error) {
-    	SignData sign = e.getText();
-    	sign = sign.set(sign.getValue(Keys.SIGN_LINES).get().set(0, Text.of(RPLang.get("regionbuilder.signerror"))));
-        this.setError(e.getCause().first(Player.class).get(), error);
-    }
-    
     void setErrorSign(ChangeSignEvent e, String error) {
     	SignData sign = e.getText();
-    	sign = sign.set(sign.getValue(Keys.SIGN_LINES).get().set(0, Text.of(RPLang.get("regionbuilder.signerror"))));
+    	sign = sign.set(sign.getValue(Keys.SIGN_LINES).get().set(0, RPUtil.toText(RPLang.get("regionbuilder.signerror"))));
         this.setError(e.getCause().first(Player.class).get(), error);
     }
     
