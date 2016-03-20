@@ -20,13 +20,21 @@ import org.spongepowered.api.command.CommandCallable;
 import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.data.key.Keys;
+import org.spongepowered.api.data.meta.ItemEnchantment;
 import org.spongepowered.api.effect.potion.PotionEffectType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.item.inventory.EmptyInventory;
 import org.spongepowered.api.item.inventory.Inventory;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.Slot;
+import org.spongepowered.api.item.inventory.entity.Hotbar;
+import org.spongepowered.api.item.inventory.entity.HumanInventory;
+import org.spongepowered.api.item.inventory.slot.EquipmentSlot;
+import org.spongepowered.api.item.inventory.slot.InputSlot;
+import org.spongepowered.api.item.inventory.transaction.InventoryTransactionResult.Type;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.Text.Builder;
 import org.spongepowered.api.text.action.TextActions;
@@ -553,19 +561,26 @@ public class RPCommands implements CommandCallable {
         		Inventory inv = player.getInventory();
         		ItemType mat = RPUtil.getItemType(RedProtect.cfgs.getString("wands.adminWandID"));
         		ItemStack item = ItemStack.of(mat, 1);
+        		item.offer(Keys.ITEM_ENCHANTMENTS, new ArrayList<ItemEnchantment>());
         		Iterable<Slot> slotIter = player.getInventory().slots();
-        		if (inv.query(mat).isEmpty()){        			        			
-        			for (Slot slot:slotIter) {
-        			    if (slot.isEmpty()) {
-        			        slot.set(item);
-        			        RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.given").toString().replace("{item}", mat.getName()));
-        			        break;
-        			    }
-        			}
-        		} else {
-        			RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.nospace").toString().replace("{item}", mat.getName()));
-        		}                
-        		return cmdr;
+        		
+        		for (Slot slot:slotIter) {
+    			    if (slot.peek().isPresent()) {
+    			    	ItemStack stack = slot.peek().get();
+    			    	if (stack.getItem().equals(mat)){
+    			    		RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.nospace").toString().replace("{item}", mat.getName())); 
+    			    		return cmdr;
+    			    	}
+    			    }
+    			}
+        		
+    			if (inv.query(HumanInventory.class).offer(item).getType().equals(Type.SUCCESS)){
+    				RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.given").toString().replace("{item}", mat.getName()));
+    			} else {
+    				RPLang.sendMessage(player,RPLang.get("cmdmanager.wand.nospace").toString().replace("{item}", mat.getName()));
+    			}
+		        
+		        return cmdr;
         	}
         	
             if (args[0].equalsIgnoreCase("?") || args[0].equalsIgnoreCase("help")) {
