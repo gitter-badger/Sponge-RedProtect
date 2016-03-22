@@ -27,6 +27,7 @@ import org.spongepowered.api.entity.projectile.source.ProjectileSource;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
+import org.spongepowered.api.event.cause.entity.damage.source.DamageSource;
 import org.spongepowered.api.event.cause.entity.damage.source.IndirectEntityDamageSource;
 import org.spongepowered.api.event.cause.entity.teleport.TeleportCause;
 import org.spongepowered.api.event.cause.entity.teleport.TeleportType;
@@ -83,19 +84,14 @@ public class RPPlayerListener{
         //deny potion
         List<String> Pots = RedProtect.cfgs.getStringList("server-protection.deny-potions");
         if(stack.getItem().equals(ItemTypes.POTION) && Pots.size() > 0){
-        	String pot = stack.createSnapshot().get(Keys.PORTION_TYPE).get().getName();   
+        	String pot = stack.get(Keys.PORTION_TYPE).get().getName().toUpperCase();   
         	
         	for (String potion:Pots){
         		potion = potion.toUpperCase();        		
-        		try{
-        			if (pot.equals(potion) && !p.hasPermission("redprotect.bypass")){
-            			e.setCancelled(true);
-            			RPLang.sendMessage(p, "playerlistener.denypotion");
-            		}
-        		} catch(IllegalArgumentException ex){
-        			RPLang.sendMessage(p, "The config 'deny-potions' have a unknow potion type. Change to a valid potion type to really deny the usage.");
-        			RedProtect.logger.severe("The config 'deny-potions' have a unknow potion type. Change to a valid potion type to really deny the usage.");
-        		}        		
+        		if (pot.equals(potion) && !p.hasPermission("redprotect.bypass")){
+        			e.setCancelled(true);
+        			RPLang.sendMessage(p, "playerlistener.denypotion");
+        		}      		
         	}                    
         }
     }
@@ -152,7 +148,7 @@ public class RPPlayerListener{
         
     	if (itemInHand.getName().equalsIgnoreCase(RedProtect.cfgs.getString("wands.adminWandID")) && p.hasPermission("redprotect.magicwand")) {
     		RedProtect.secondLocationSelections.put(p, l);
-            p.sendMessage(RPUtil.toText(RPLang.get("playerlistener.wand2").toString() + RPLang.get("general.color") + " (&e" + l.getBlockX() + RPLang.get("general.color") + ", &e" + l.getBlockY() + RPLang.get("general.color") + ", &e" + l.getBlockZ() + RPLang.get("general.color") + ")."));
+            p.sendMessage(RPUtil.toText(RPLang.get("playerlistener.wand2") + RPLang.get("general.color") + " (&e" + l.getBlockX() + RPLang.get("general.color") + ", &e" + l.getBlockY() + RPLang.get("general.color") + ", &e" + l.getBlockZ() + RPLang.get("general.color") + ")."));
             event.setCancelled(true);
             return;  
         }
@@ -218,7 +214,7 @@ public class RPPlayerListener{
                     p.sendMessage(r.info());
                     p.sendMessage(RPUtil.toText(RPLang.get("general.color") + "-----------------------------------------"));
                 } else {
-                	p.sendMessage(RPUtil.toText(RPLang.get("playerlistener.region.entered").toString().replace("{region}", r.getName()).replace("{owners}", RPUtil.UUIDtoPlayer(r.getCreator()))));
+                	p.sendMessage(RPUtil.toText(RPLang.get("playerlistener.region.entered").replace("{region}", r.getName()).replace("{owners}", RPUtil.UUIDtoPlayer(r.getCreator()))));
                 }
                 event.setCancelled(true);
                 return;
@@ -239,7 +235,7 @@ public class RPPlayerListener{
                     	int x = b.getLocation().get().getBlockX();
                     	int y = b.getLocation().get().getBlockY();
                     	int z = b.getLocation().get().getBlockZ();
-                        RPLang.sendMessage(p, RPLang.get("playerlistener.region.opened").toString().replace("{region}", "X:"+x+" Y:"+y+" Z:"+z));
+                        RPLang.sendMessage(p, RPLang.get("playerlistener.region.opened").replace("{region}", "X:"+x+" Y:"+y+" Z:"+z));
                     }                    
                 }
         	}
@@ -268,7 +264,7 @@ public class RPPlayerListener{
                                 return;
                             }
                             else {
-                                RPLang.sendMessage(p, RPLang.get("playerlistener.region.opened").toString().replace("{region}", RPUtil.UUIDtoPlayer(r.getCreator())));
+                                RPLang.sendMessage(p, RPLang.get("playerlistener.region.opened").replace("{region}", RPUtil.UUIDtoPlayer(r.getCreator())));
                             }
                 	} 
                 }               
@@ -280,7 +276,7 @@ public class RPPlayerListener{
                             event.setCancelled(true);
                         }
                         else {
-                            RPLang.sendMessage(p, RPLang.get("playerlistener.region.levertoggled").toString().replace("{region}", RPUtil.UUIDtoPlayer(r.getCreator())));
+                            RPLang.sendMessage(p, RPLang.get("playerlistener.region.levertoggled").replace("{region}", RPUtil.UUIDtoPlayer(r.getCreator())));
                         }
                     }
                 }
@@ -291,7 +287,7 @@ public class RPPlayerListener{
                             event.setCancelled(true);
                         }
                         else {
-                            RPLang.sendMessage(p, RPLang.get("playerlistener.region.buttonactivated").toString().replace("{region}", RPUtil.UUIDtoPlayer(r.getCreator())));
+                            RPLang.sendMessage(p, RPLang.get("playerlistener.region.buttonactivated").replace("{region}", RPUtil.UUIDtoPlayer(r.getCreator())));
                         }
                     }
                 }
@@ -319,19 +315,19 @@ public class RPPlayerListener{
                 	      List<Text> sign = b.get(Keys.SIGN_LINES).get();
                 	      for (String tag:RedProtect.cfgs.getStringList("region-settings.allow-sign-interact-tags")){
                 	    	  //check first rule
-                	    	  if (tag.equalsIgnoreCase(sign.get(0).toString())){
+                	    	  if (tag.equalsIgnoreCase(sign.get(0).toPlain())){
                     	    	  return;
                     	      }
                 	    	  
                 	    	  //check if tag is owners or members names
                 	    	  if (tag.equalsIgnoreCase("{membername}")){
                 	    		  for (String owner:r.getOwners()){
-                    	    		  if (sign.get(0).toString().equalsIgnoreCase(RPUtil.UUIDtoPlayer(owner))){
+                    	    		  if (sign.get(0).toPlain().equalsIgnoreCase(RPUtil.UUIDtoPlayer(owner))){
                     	    			  return;
                     	    		  }
                     	    	  }
                 	    		  for (String member:r.getMembers()){
-                    	    		  if (sign.get(0).toString().equalsIgnoreCase(RPUtil.UUIDtoPlayer(member))){
+                    	    		  if (sign.get(0).toPlain().equalsIgnoreCase(RPUtil.UUIDtoPlayer(member))){
                     	    			  return;
                     	    		  }
                     	    	  }
@@ -339,7 +335,7 @@ public class RPPlayerListener{
                 	    	  
                 	    	  //check if tag is player name
                 	    	  if (tag.equalsIgnoreCase("{playername}")){
-                	    		  if (sign.get(0).toString().equalsIgnoreCase(RPUtil.UUIDtoPlayer(p.getName()))){
+                	    		  if (sign.get(0).toPlain().equalsIgnoreCase(RPUtil.UUIDtoPlayer(p.getName()))){
                 	    			  return;
                 	    		  }
                 	    	  }
@@ -354,7 +350,7 @@ public class RPPlayerListener{
                 		itemInHand.equals(ItemTypes.LAVA_BUCKET) || 
                 		itemInHand.equals(ItemTypes.ITEM_FRAME) || 
                 		itemInHand.equals(ItemTypes.PAINTING)) && !r.canBuild(p)) {
-                    RPLang.sendMessage(p, RPLang.get("playerlistener.region.cantuse").toString());
+                    RPLang.sendMessage(p, RPLang.get("playerlistener.region.cantuse"));
                     event.setCancelled(true);
                     return;
                 }                    
@@ -432,13 +428,13 @@ public class RPPlayerListener{
     public void onEntityDamageEvent(DamageEntityEvent e) { 
     	//victim
     	Entity e1 = e.getTargetEntity(); 
-    	RedProtect.logger.debug("player","RPLayerListener: Is DamageEntityEvent event. Victim "+e1.getType().getName()); 
     	
     	//damager
     	Entity e2 = null;
     	    	
     	if (e.getCause().first(IndirectEntityDamageSource.class).isPresent()){
     		e2 = e.getCause().first(IndirectEntityDamageSource.class).get().getSource();
+    		
     		RedProtect.logger.debug("player","RPLayerListener: Is DamageEntityEvent event. Damager "+e2.getType().getName()); 
     	}
     	
@@ -456,18 +452,22 @@ public class RPPlayerListener{
         Region r = RedProtect.rm.getTopRegion(l);
         if (r == null){
         	return;
-        }        
-        if (e1 instanceof Hanging && !r.canBuild(damager)){
-        	RPLang.sendMessage(damager, "entitylistener.region.cantinteract");
-            e.setCancelled(true);
-            return;
-        }         
-        if (e1 instanceof Player && r.flagExists("pvp") && !r.canPVP(damager)){
-        	RPLang.sendMessage(damager, "entitylistener.region.cantpvp");
-            e.setCancelled(true);
-            return;
-        }
+        }     
         
+        RedProtect.logger.debug("player","RPLayerListener: Is DamageEntityEvent event. Victim "+e1.getType().getName()); 
+        
+        if (damager instanceof Player){
+        	if (e1 instanceof Hanging && !r.canBuild(damager)){
+            	RPLang.sendMessage(damager, "entitylistener.region.cantinteract");
+                e.setCancelled(true);
+                return;
+            }         
+            if (e1 instanceof Player && r.flagExists("pvp") && !r.canPVP(damager)){
+            	RPLang.sendMessage(damager, "entitylistener.region.cantpvp");
+                e.setCancelled(true);
+                return;
+            }
+        }
         
         //return if not player
     	if (!(e.getTargetEntity() instanceof Player)){
@@ -487,16 +487,12 @@ public class RPPlayerListener{
     	
         //deny damagecauses
         List<String> Causes = RedProtect.cfgs.getStringList("server-protection.deny-playerdeath-by");
-        if(e.getCause().containsType(DamageType.class) && Causes.size() > 0){
-        	DamageType damagec = e.getCause().first(DamageType.class).get();
+        if(e.getCause().containsType(DamageSource.class) && Causes.size() > 0){
+        	DamageType damagec = e.getCause().first(DamageSource.class).get().getType();
         	for (String cause:Causes){
-        		try{
-        			if (damagec.getId().equalsIgnoreCase(cause)){
-            			e.setCancelled(true);
-            		}
-        		} catch(IllegalArgumentException ex){
-        			RedProtect.logger.severe("The config 'deny-playerdeath-by' have an unknow damage cause type. Change to a valid damage cause type.");
-        		}        		
+        		if (damagec.getName().equalsIgnoreCase(cause)){
+        			e.setCancelled(true);
+        		}       		
         	}                    
         }        
     }
@@ -774,11 +770,12 @@ public class RPPlayerListener{
     }     
     
     @Listener
-    public void onPlayerDie(DestructEntityEvent.Death e){
-    	RedProtect.logger.debug("player","RPLayerListener: Is DestructEntityEvent.Death"); 
+    public void onPlayerDie(DestructEntityEvent.Death e){    	 
     	if (!(e.getTargetEntity() instanceof Player)){
     		return;
     	}
+    	
+    	RedProtect.logger.debug("player","RPLayerListener: Is DestructEntityEvent.Death");
     	
     	Player p = (Player) e.getTargetEntity();
     	
@@ -847,9 +844,9 @@ public class RPPlayerListener{
     	RedProtect.logger.debug("player","Is ClientConnectionEvent.Login event. Player "+e.getTargetUser().getName());
     	
     	User p = e.getTargetUser();
-    	Location<World> l = e.getFromTransform().getLocation();
+    	//Location<World> l = e.getFromTransform().getLocation();
     	//Adjust inside region
-    	e.setToTransform(new Transform<World>(new Location<World>(l.getExtent(), l.getBlockX(), l.getBlockY()+0.1, l.getBlockZ())));
+    	//e.setToTransform(new Transform<World>(new Location<World>(l.getExtent(), l.getBlockX(), l.getBlockY()+0.1, l.getBlockZ())));
     	
     	RedProtect.logger.debug("player","Is ClientConnectionEvent.Login event.");
     	/*
@@ -872,27 +869,30 @@ public class RPPlayerListener{
     }
     
     @Listener
-    public void PlayerTrownPotion(LaunchProjectileEvent e, @First Player p){ 
+    public void PlayerTrownPotion(LaunchProjectileEvent e){ 
     	
     	Entity ent = e.getTargetEntity();    	
     	RedProtect.logger.debug("player","Is PotionSplashEvent event.");
         
     	Region r = RedProtect.rm.getTopRegion(ent.getLocation());    	        
-        if (ent instanceof ThrownPotion){        	
-        	if (r != null && !r.allowPotions(p)){
-        		RPLang.sendMessage(p, "playerlistener.region.cantuse");
-        		e.setCancelled(true);
-        		return;
-        	} 
+        if (ent instanceof ThrownPotion){ 
         	
     		ThrownPotion potion = (ThrownPotion) e.getTargetEntity();
     		ProjectileSource thrower = potion.getShooter();    		
+    		
+    		if (thrower instanceof Player){
+    			if (r != null && !r.allowPotions((Player)thrower)){
+            		RPLang.sendMessage((Player)thrower, "playerlistener.region.cantuse");
+            		e.setCancelled(true);
+            		return;
+            	}
+    		}
     		
     		List<PotionEffect> pottypes = potion.get(Keys.POTION_EFFECTS).get();
     		//deny potion
             List<String> Pots = RedProtect.cfgs.getStringList("server-protection.deny-potions");
     		for (PotionEffect t:pottypes){
-    			if (Pots.size() > 0 && Pots.contains(t.getType().getName())){
+    			if (Pots.size() > 0 && Pots.contains(t.getType().getName().toUpperCase())){
     				e.setCancelled(true);
     				if (thrower instanceof Player){
         				RPLang.sendMessage((Player)thrower, RPLang.get("playerlistener.denypotion"));

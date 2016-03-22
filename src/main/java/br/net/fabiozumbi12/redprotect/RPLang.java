@@ -171,7 +171,7 @@ public class RPLang {
 	}
 	
 	public static void sendMessage(Player p, String key){
-		if (Lang.get(key) == null){
+		if (get(key) == null){
 			p.sendMessage(RPUtil.toText(get("_redprotect.prefix")+" "+key));
 		} else if (get(key).toString().equalsIgnoreCase("")){
 			return;

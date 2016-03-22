@@ -22,7 +22,6 @@ import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.block.InteractBlockEvent;
 import org.spongepowered.api.event.block.tileentity.ChangeSignEvent;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.entity.DamageEntityEvent;
 import org.spongepowered.api.event.entity.IgniteEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
@@ -117,12 +116,12 @@ public class RPBlockListener{
                     return;
             	} else {
             		RPLang.sendMessage(p, "blocklistener.container.notprotected");
-            		w.digBlock(loc.getBlockPosition(), Cause.of(NamedCause.simulated(p)));
+            		//w.digBlock(loc.getBlockPosition(), Cause.of(NamedCause.simulated(p)));
             		return;
             	}
         	} else {
         		RPLang.sendMessage(p, "blocklistener.container.notregion");
-        		w.digBlock(loc.getBlockPosition(), Cause.of(NamedCause.simulated(p)));
+        		//w.digBlock(loc.getBlockPosition(), Cause.of(NamedCause.simulated(p)));
         		return;
         	}        	
         }

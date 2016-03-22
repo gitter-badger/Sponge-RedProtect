@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.text.Text;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
@@ -50,9 +49,9 @@ class RedefineRegionBuilder extends RegionBuilder{
         } 
         
         if (othersName.size() > 0){
-        	p.sendMessage(Text.of(RPLang.get("general.color") + "------------------------------------"));
-        	p.sendMessage(Text.of(RPLang.get("regionbuilder.overlapping")));
-        	p.sendMessage(Text.of(RPLang.get("region.regions") + " " + othersName));
+        	p.sendMessage(RPUtil.toText(RPLang.get("general.color") + "------------------------------------"));
+        	p.sendMessage(RPUtil.toText(RPLang.get("regionbuilder.overlapping")));
+        	p.sendMessage(RPUtil.toText(RPLang.get("region.regions") + " " + othersName));
         }
         
         

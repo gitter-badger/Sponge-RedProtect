@@ -92,7 +92,7 @@ public class RedProtect {
             
             RedProtect.logger.sucess(RedProtect.plugin.getName() + " enabled.");  
             
-            if (cfgs.getString("file-type").equals("yml")){
+            if (cfgs.getString("file-type").equals("file")){
             	AutoSaveHandler(); 
             }
         }
