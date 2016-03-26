@@ -88,6 +88,14 @@ class DefineRegionBuilder extends RegionBuilder{
         	}
         } 
         
+        int pLimit = RedProtect.ph.getPlayerLimit(p);
+        boolean areaUnlimited = RedProtect.ph.hasPerm(p, "redprotect.limit.blocks.unlimited");
+        int totalArea = RedProtect.rm.getTotalRegionSize(pName);
+        if (pLimit >= 0 && totalArea + region.getArea() > pLimit && !areaUnlimited) {
+            RPLang.sendMessage(p, RPLang.get("regionbuilder.reach.limit"));
+            return;
+        }
+        
         if (othersName.size() > 0){
         	p.sendMessage(RPUtil.toText(RPLang.get("general.color") + "------------------------------------"));
         	p.sendMessage(RPUtil.toText(RPLang.get("regionbuilder.overlapping")));

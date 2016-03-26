@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,8 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameMode;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.Location;
@@ -337,15 +340,13 @@ public class RPUtil {
     		return uuid;
     	}
     	
-    	try{
-    		Player offp = RedProtect.serv.getPlayer(PlayerName).get();    		
-    		uuid = offp.getUniqueId().toString();
-		} catch (IllegalArgumentException e){	
-	    	Player onp = RedProtect.serv.getPlayer(PlayerName).get();
-	    	if (onp != null){
-	    		uuid = onp.getUniqueId().toString();
-	    	}
+    	UserStorageService uss = Sponge.getGame().getServiceManager().provide(UserStorageService.class).get();
+    	
+    	Optional<GameProfile> ogpName = uss.getAll().stream().filter(f -> f.getName().isPresent() && f.getName().get().equalsIgnoreCase(PlayerName)).findFirst();
+		if (ogpName.isPresent()){
+			return ogpName.get().getUniqueId().toString();
 		}
+		
 		return uuid;    	
     }
     
@@ -359,28 +360,27 @@ public class RPUtil {
     		return uuid;
     	}
     	
-    	String PlayerName = null;
-    	UUID uuids = null;
+    	String PlayerName = "UnknowPlayer";
+    	UUID uuids = UUID.fromString(uuid);
     	
-    	if (!RedProtect.OnlineMode){
-	    	PlayerName = uuid.toLowerCase();	    	
-    		return PlayerName;
-    	}
+    	if (!RedProtect.OnlineMode){	    	
+    		return uuid.toLowerCase();
+    	}    	
     	
-    	try{
-    		uuids = UUID.fromString(uuid);
-    		Player offp = RedProtect.serv.getPlayer(uuids).get();
-    		PlayerName = offp.getName();
-		} catch (IllegalArgumentException e){	
-			Player onp = RedProtect.serv.getPlayer(uuid).get();
-	    	if (onp != null){
-	    		PlayerName = onp.getName();
-	    	}
+    	UserStorageService uss = Sponge.getGame().getServiceManager().provide(UserStorageService.class).get();
+    	
+		Optional<GameProfile> ogpName = uss.getAll().stream().filter(f -> f.getName().isPresent() && f.getName().get().equalsIgnoreCase(uuid)).findFirst();
+		if (ogpName.isPresent()){
+			return ogpName.get().getName().get();
 		}
-    	
+		
+		if (uss.get(uuids).isPresent()){
+			return uss.get(uuids).get().getName();
+		}
+		    	
 		return PlayerName;    	
     }
-    
+    	
 	private static boolean isUUID(String uuid){
     	if (uuid == null){
     		return false;
