@@ -1,6 +1,5 @@
 package br.net.fabiozumbi12.redprotect;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

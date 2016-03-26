@@ -527,7 +527,7 @@ public class RPCommands implements CommandCallable {
         	
         	//rp claim
         	if (args[0].equalsIgnoreCase("claim")){
-        		if (!player.hasPermission("redprotect.admin.claim")) {
+        		if (!RedProtect.ph.hasHelpPerm(player, "claim")) {
                     RPLang.sendMessage(player, "no.permission");
                     return cmdr;
                 }
@@ -690,7 +690,7 @@ public class RPCommands implements CommandCallable {
         	
         	//rp claim [nameOfRegion]
         	if (args[0].equalsIgnoreCase("claim")){
-        		if (!player.hasPermission("redprotect.admin.claim")) {
+        		if (!RedProtect.ph.hasHelpPerm(player, "claim")) {
                     RPLang.sendMessage(player, "no.permission");
                     return cmdr;
                 }
@@ -710,7 +710,7 @@ public class RPCommands implements CommandCallable {
         	}
         	
             if (args[0].equalsIgnoreCase("redefine")) {
-                if (!player.hasPermission("redprotect.admin.redefine")) {
+                if (!RedProtect.ph.hasHelpPerm(player, "redefine")) {
                     RPLang.sendMessage(player, "no.permission");
                     return cmdr;
                 }
@@ -790,7 +790,7 @@ public class RPCommands implements CommandCallable {
         	
         	//rp claim [regionName] [owner]
         	if (args[0].equalsIgnoreCase("claim")){
-        		if (!player.hasPermission("redprotect.admin.claim")) {
+        		if (!RedProtect.ph.hasHelpPerm(player, "claim")) {
                     RPLang.sendMessage(player, "no.permission");
                     return cmdr;
                 }
