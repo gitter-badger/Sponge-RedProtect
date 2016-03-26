@@ -116,7 +116,10 @@ public class RPPlayerListener{
         	itemInHand = p.getItemInHand().get().getItem();
         }
         
-    	if (itemInHand.getName().equalsIgnoreCase(RedProtect.cfgs.getString("wands.adminWandID")) && p.hasPermission("redprotect.magicwand")) {
+    	if (itemInHand.getName().equalsIgnoreCase(RedProtect.cfgs.getString("wands.adminWandID")) && 
+    			(RedProtect.ph.hasHelpPerm(p,"claim") || 
+    			RedProtect.ph.hasHelpPerm(p,"define") ||
+    			RedProtect.ph.hasHelpPerm(p,"redefine"))) {
     		RedProtect.firstLocationSelections.put(p, l);
             p.sendMessage(RPUtil.toText(RPLang.get("playerlistener.wand1") + RPLang.get("general.color") + " (&e" + l.getBlockX() + RPLang.get("general.color") + ", &e" + l.getBlockY() + RPLang.get("general.color") + ", &e" + l.getBlockZ() + RPLang.get("general.color") + ")."));
             event.setCancelled(true);
@@ -146,7 +149,10 @@ public class RPPlayerListener{
         	itemInHand = p.getItemInHand().get().getItem();
         }
         
-    	if (itemInHand.getName().equalsIgnoreCase(RedProtect.cfgs.getString("wands.adminWandID")) && p.hasPermission("redprotect.magicwand")) {
+    	if (itemInHand.getName().equalsIgnoreCase(RedProtect.cfgs.getString("wands.adminWandID")) && 
+    			(RedProtect.ph.hasHelpPerm(p,"claim") || 
+    			RedProtect.ph.hasHelpPerm(p,"define") ||
+    			RedProtect.ph.hasHelpPerm(p,"redefine"))) {
     		RedProtect.secondLocationSelections.put(p, l);
             p.sendMessage(RPUtil.toText(RPLang.get("playerlistener.wand2") + RPLang.get("general.color") + " (&e" + l.getBlockX() + RPLang.get("general.color") + ", &e" + l.getBlockY() + RPLang.get("general.color") + ", &e" + l.getBlockZ() + RPLang.get("general.color") + ")."));
             event.setCancelled(true);
